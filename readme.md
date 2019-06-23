@@ -27,6 +27,9 @@ Example:
 
     python3 wss.py starbucks.com
 
+For change language, make a new json strings file in
+`resources/strings.[lang].json` and apply in `wss.py:39`.
+
 
 ## Advantage
 
