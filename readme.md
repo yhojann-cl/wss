@@ -57,3 +57,10 @@ Currently supports the following methods:
 
 - Print a tree of ip address with each subdomain in group.
 - Write a file with the printed tree.
+
+
+## Contributions
+
+- Ideas and reports of problems: https://github.com/WHK102/wss/issues
+- Corrections: https://github.com/WHK102/wss/pulls
+- Donations: By Paypal ( yhojann.aguilera@gmail.com )
