@@ -2,20 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import os
 import json
-import signal
-import traceback
 import pytz
-import ntpath
 import socket
-import re
-import inspect
-from   glob        import glob
-from   os.path     import dirname, basename, abspath
 from   datetime    import datetime
 from   anytree     import Node, RenderTree
-from   collections import deque
 
 from modules.axfr               import MethodAxfr
 from modules.dnsqueries         import MethodDnsQueries
