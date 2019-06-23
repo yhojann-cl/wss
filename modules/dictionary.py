@@ -43,7 +43,7 @@ class MethodDictionary(object):
             'n-subdomains-in-file': 0,
             'current-line'        : 0,
             'retries'             : 0,
-            'max-retries'         : 500,
+            'max-retries'         : 2,
             'hostname-base'       : None
         }
 
