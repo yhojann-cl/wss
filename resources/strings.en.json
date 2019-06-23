@@ -1,0 +1,141 @@
+{
+    "header": [
+        "WSS (WHK Subdomains Scanner)",
+        "Version  : v2.3.1 Beta",
+        "Contact : whk@elhacker.net",
+        "-----------------------------------------",
+        ""
+    ],
+    "usage": [
+        "Usage: {scriptname} [subdomain]",
+        "",
+        "Example:",
+        "  {scriptname} cl",
+        "  {scriptname} google.cl",
+        "  {scriptname} dev.google.cl"
+    ],
+    "result": {
+        "result-all-title" : "- Result:",
+        "node": {
+            "root"         : "{count} hosts were found",
+            "item-printed" : "    {item}"
+        },
+        "empty" : "! No results to show",
+        "finish": "Done!\nA file with records has been saved in path: {path}"
+    },
+    "errors": {
+        "bad-python-version"      : "Sorry, Python 3.x, is required.",
+        "empty-hostname"        : "You need give a hostname",
+        "empty-methods"         : "You need enable at least a search method"
+    },
+    "get-ip-address": {
+        "title"        : "- Getting IP address and associate tree results...",
+        "item-progress": "    + {hostname} -> ",
+        "unknown"      : "Unknown IP address"
+    },
+    "method-begin" : "- Method {current}/{total}: {title}",
+    "methods" : {
+        "axfr"                : {
+            "title"                 : "Getting from zone NS AXFR",
+            "getting-ns-servers"    : "    Getting results NS ...",
+            "unable-get-ns-servers" : "    ! Unable get NS servers from DNS registration.",
+            "making-axfr-queries"   : "    Executing AXFR queries:",
+            "ns-progress"           : "        -> {nameserver} ... ",
+            "ns-vulnerable"         : "Vulnerable! ({count} records found).",
+            "getting-items"         : "    Records found:",
+            "item-found"            : "        {hostname}",
+            "ns-not-vulnerable"     : "isn't vulnerable."
+        },
+        "dns-queries"         : {
+            "title"                 : "Getting from NS, TXT, SPF y MX records",
+            "title-query-type"      : "    Executing {type} query...",
+            "item-found"            : "        -> {hostname} found.",
+            "no-items-found"        : "    ! No records redirect to primary hostname."
+        },
+        "virus-total"         : {
+            "title"                 : "Getting from virustotal.com",
+            "paginating"            : "    Getting from page {number} ...",
+            "item-found"            : "        -> {hostname} Encontrado.",
+            "no-more"               : "    ! No more results.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "no-connect"            : "    ! Unable connect to server.",
+            "corrupt-response"      : "    ! The server not reply correctly (wrong json API)."
+        },
+        "robtex"              : {
+            "title"                 : "Getting from robtex.com",
+            "no-connect"            : "    ! Unable connect to server.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "empty"                 : "    No subdomains found.",
+            "item-found"            : "    -> {hostname} found."
+        },
+        "crt-sh"              : {
+            "title"                 : "Getting from crt.sh",
+            "no-connect"            : "    ! Unable connect to server.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "corrupt-response"      : "    ! The server not reply correctly (wrong json API).",
+            "empty"                 : "    No subdomains found.",
+            "item-found"            : "    -> {hostname} found."
+        },
+        "certificate-details" : {
+            "title"                 : "Getting from certificatedetails.com",
+            "no-connect"            : "    ! Unable connect to server.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "corrupt-response"      : "    ! The server not reply correctly (wrong json API).",
+            "empty"                 : "    No subdomains found.",
+            "item-found"            : "        -> {hostname} found.",
+            "find-links"            : "    Searching knows links ...",
+            "find-link"             : "    Searching in link {link-id}/{total-links} ..."
+        },
+        "google"              : {
+            "title"                 : "Getting from google.com",
+            "no-api-key"            : "    ! Google API-key must be given",
+            "no-connect"            : "    ! Unable connect to server.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "pagination"            : "    Paginate now...",
+            "item-found"            : "        -> {hostname} found.",
+            "no-more-results"       : "    No more results.",
+            "corrupt-response"      : "    ! The server not reply correctly (wrong json API)."
+        },
+        "bing"                : {
+            "title"                 : "Getting from bing.com",
+            "no-connect"            : "    ! Unable connect to server.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "pagination"            : "    Paginate now...",
+            "item-found"            : "        -> {hostname} found.",
+            "no-more-results"       : "    No more results."
+        },
+        "dnsdumpster"         : {
+            "title"                 : "Getting from dnsdumpster.com",
+            "no-connect"            : "    ! Unable connect to server.",
+            "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
+            "getting-token-xsrf"    : "    Login in server, please wait...",
+            "no-xsrf-token-found"   : "    ! Unable obtain XSRF token session.",
+            "getting-subdomains"    : "    Getting data using session obtained...",
+            "empty"                 : "    No subdomains found.",
+            "item-found"            : "        -> {hostname} found."
+        },
+        "dictionary"          : {
+            "wildcard-detected"  : "    ! has been detected a wilcard as a subdomain, can't check.",
+            "counting-items"     : "    Counting items of dictionary...",
+            "total-items"        : "    {total-items} subdomains to check.",
+            "loading-threads"    : "    Loading threads en heap ...",
+            "progress-pre"       : "\n\n\n\n",
+            "progress-clear"     : "\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K",
+            "progress"           : [
+                        "",
+                        "    Verifying : {hostname} ...",
+                        "    Progress    : {current-line} / {total-lines} - {percent-lines}",
+                        "    Threads     : {total-threads}",
+                        "    Retries  : {total-retries}"
+                    
+            ],
+            "item-found"         : "        -> {hostname} found."
+        },
+        "dictionary-4"        : {
+            "title"                 : "Getting through brutal force (4 chars)"
+        },
+        "dictionary-words"    : {
+            "title"                 : "Getting through a knows subdomains dictionary"
+        }
+    }
+}
