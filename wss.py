@@ -27,7 +27,7 @@ class Controller(object):
 
         # Current language file (change this for other languages)
         # Try load json file
-        with open('resources/strings.es.json', 'r') as fileHandler:
+        with open('resources/strings.en.json', 'r') as fileHandler:
             self.strings = json.load(fileHandler)
 
         # Python 3 is required
