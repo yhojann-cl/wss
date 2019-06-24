@@ -24,9 +24,9 @@
         "finish": "Done!\nA file with records has been saved in path: {path}"
     },
     "errors": {
-        "bad-python-version"      : "Sorry, Python 3.x, is required.",
-        "empty-hostname"        : "You need give a hostname",
-        "empty-methods"         : "You need enable at least a search method"
+        "bad-python-version" : "Sorry, Python 3.x, is required.",
+        "empty-hostname"     : "You need give a hostname",
+        "empty-methods"      : "You need enable at least a search method"
     },
     "get-ip-address": {
         "title"        : "- Getting IP address and associate tree results...",
@@ -55,7 +55,7 @@
         "virus-total"         : {
             "title"                 : "Getting from virustotal.com",
             "paginating"            : "    Getting from page {number} ...",
-            "item-found"            : "        -> {hostname} Encontrado.",
+            "item-found"            : "        -> {hostname} found.",
             "no-more"               : "    ! No more results.",
             "wrong-status-http"     : "    ! The servver not reply correctly: HTTP status {id}",
             "no-connect"            : "    ! Unable connect to server.",
@@ -115,18 +115,18 @@
             "item-found"            : "        -> {hostname} found."
         },
         "dictionary"          : {
-            "wildcard-detected"  : "    ! has been detected a wilcard as a subdomain, can't check.",
+            "wildcard-detected"  : "    ! Has been detected a wilcard as a subdomain, can't check.",
             "counting-items"     : "    Counting items of dictionary...",
             "total-items"        : "    {total-items} subdomains to check.",
-            "loading-threads"    : "    Loading threads en heap ...",
+            "loading-threads"    : "    Loading threads in heap ...",
             "progress-pre"       : "\n\n\n\n",
             "progress-clear"     : "\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K",
             "progress"           : [
                         "",
                         "    Verifying : {hostname} ...",
-                        "    Progress    : {current-line} / {total-lines} - {percent-lines}",
-                        "    Threads     : {total-threads}",
-                        "    Retries  : {total-retries}"
+                        "    Progress  : {current-line} / {total-lines} - {percent-lines}",
+                        "    Threads   : {total-threads}",
+                        "    Retries   : {total-retries}"
                     
             ],
             "item-found"         : "        -> {hostname} found."
