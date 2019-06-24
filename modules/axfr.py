@@ -46,7 +46,7 @@ class MethodAxfr(object):
 
         if(len(nameServers) == 0):
             self.context.out(
-                self.context.strings['methods']['axfr']['unable-get-ns-servers']
+                self.context.strings['methods']['axfr']['unable-to-get-ns-servers']
             )
             return False
 

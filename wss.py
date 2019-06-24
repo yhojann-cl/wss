@@ -130,7 +130,7 @@ class Controller(object):
 
         # Stack of subdomains found
         self.subdomains      = []
-        self.domain = str(sys.argv[1])
+        self.domain = str(sys.argv[1]).lower()
 
         # Can continue to next method?
         self.canContinue = True

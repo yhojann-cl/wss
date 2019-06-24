@@ -82,7 +82,7 @@ class MethodDictionary(object):
         self.context.out(
             self.context.strings['methods']['dictionary']['total-items'],
             parseDict={
-                'total-items': self.dictionary['n-subdomains-in-file']
+                'total-items': "{:,}".format(self.dictionary['n-subdomains-in-file'])
             }
         )
 
@@ -166,7 +166,7 @@ class MethodDictionary(object):
 
             try:
                 # Try read the next line from dictionary
-                subdomain = self.dictionary['file-handler'].readline().strip()
+                subdomain = self.dictionary['file-handler'].readline().strip().lower()
 
                 # Line count
                 self.dictionary['current-line'] += 1
