@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodGoogle:
@@ -22,7 +22,17 @@ class MethodGoogle:
         self.googleCx = '010763716184496466486:fscqb-8v6rs'
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['google']['title']
+            }
+        )
 
         if(not self.googleApiKey.strip()):
             self.context.out(
@@ -31,16 +41,16 @@ class MethodGoogle:
             return
 
         # Find on first page
-        self.paginate(hostnameBase)
+        self.paginate()
 
 
-    def paginate(self, hostnameBase, pageNumber=1):
+    def paginate(self, pageNumber=1):
 
         searchContext = {
             'max-pages'   : 15,
             'max-result'  : 10,
             'start-index' : 1,
-            'query'       : 'site:' + hostnameBase
+            'query'       : 'site:' + self.context.baseHostname
         }
         
         if(self.hostnames):
@@ -122,7 +132,7 @@ class MethodGoogle:
         for item in result['items']:
             
             # Is a valid subdomain?
-            if(not item['displayLink'].endswith('.' + hostnameBase)):
+            if(not item['displayLink'].endswith('.' + self.context.baseHostname)):
                 continue
             
             if(not item['displayLink'] in self.hostnames):
@@ -147,7 +157,4 @@ class MethodGoogle:
             return
 
         # Next page
-        self.paginate(
-            hostnameBase=hostnameBase,
-            pageNumber=pageNumber + 1
-        )
+        self.paginate(pageNumber=pageNumber + 1)

@@ -3,7 +3,7 @@
 
 import json
 import re
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodVirusTotal:
@@ -17,7 +17,20 @@ class MethodVirusTotal:
         self.hostnames = []
 
 
-    def find(self, hostnameBase, nextUrl=None, pageId=1):
+    def find(self, nextUrl=None, pageId=1):
+
+        # First page?
+        if(nextUrl is None):
+
+            # Header message
+            self.context.out(
+                message=self.context.strings['method-begin'],
+                parseDict={
+                    'current' : self.context.progress['methods']['current'],
+                    'total'   : self.context.progress['methods']['total'],
+                    'title'   : self.context.strings['methods']['virus-total']['title']
+                }
+            )
 
         self.context.out(
             message=self.context.strings['methods']['virus-total']['paginating'],
@@ -35,7 +48,7 @@ class MethodVirusTotal:
         try:
             if(nextUrl is None):
                 result = crawler.httpRequest(
-                    url='https://www.virustotal.com/ui/domains/' + crawler.urlencode(hostnameBase) + '/subdomains?limit=40'
+                    url='https://www.virustotal.com/ui/domains/' + crawler.urlencode(self.context.baseHostname) + '/subdomains?limit=40'
                 )
             else:
                 result = crawler.httpRequest(nextUrl)
@@ -96,7 +109,6 @@ class MethodVirusTotal:
             (result['links'])
         ):
             self.find(
-                hostnameBase=hostnameBase,
                 nextUrl=str(result['links']['next']),
                 pageId=(pageId + 1)
             )

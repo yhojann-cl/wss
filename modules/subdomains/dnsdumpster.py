@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodDnsDumpster(object):
@@ -13,7 +13,17 @@ class MethodDnsDumpster(object):
         self.context = context
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['dnsdumpster']['title']
+            }
+        )
 
         self.context.out(
             self.context.strings['methods']['dnsdumpster']['getting-token-xsrf']
@@ -72,7 +82,7 @@ class MethodDnsDumpster(object):
                 url='https://dnsdumpster.com/',
                 postData={
                     'csrfmiddlewaretoken' : tokenXsrf,
-                    'targetip'            : hostnameBase
+                    'targetip'            : self.context.baseHostname
                 }
             )
 
@@ -95,7 +105,7 @@ class MethodDnsDumpster(object):
             return
 
         matches = re.findall(
-            br'>([\w\.\-\_\$]+?\.' + re.escape(hostnameBase).encode() + br')<',
+            br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')<',
             result['response-content']
         )
 

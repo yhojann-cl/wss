@@ -3,7 +3,7 @@
 
 import json
 import re
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodCertificateDetails:
@@ -17,7 +17,17 @@ class MethodCertificateDetails:
         self.hostnames = []
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['certificate-details']['title']
+            }
+        )
 
         # Use the crawler bot
         crawler = WCrawler()
@@ -27,7 +37,7 @@ class MethodCertificateDetails:
 
         try:
             result = crawler.httpRequest(
-                url='https://certificatedetails.com/api/list/' + crawler.urlencode(hostnameBase)
+                url='https://certificatedetails.com/api/list/' + crawler.urlencode(self.context.baseHostname)
             )
 
             # Free memory (no navigation context)
@@ -72,11 +82,11 @@ class MethodCertificateDetails:
         for item in result:
 
             # Drop root wildcards
-            if(item['CommonName'] == ('*.' + hostnameBase)):
+            if(item['CommonName'] == ('*.' + self.context.baseHostname)):
                 continue
 
             # Valid subdomain?
-            if(not item['CommonName'].endswith('.' + hostnameBase)):
+            if(not item['CommonName'].endswith('.' + self.context.baseHostname)):
                 continue
 
             if(item['CommonName'].startswith('*.')):
@@ -108,14 +118,13 @@ class MethodCertificateDetails:
             linkId += 1
 
             self.findInLink(
-                hostnameBase=hostnameBase,
                 url='https://certificatedetails.com' + item['Link'],
                 linkId=linkId,
                 totalLinks=len(result)
             )
 
 
-    def findInLink(self, hostnameBase, url, linkId, totalLinks):
+    def findInLink(self, url, linkId, totalLinks):
 
         self.context.out(
             message=self.context.strings['methods']['certificate-details']['find-link'],
@@ -154,7 +163,7 @@ class MethodCertificateDetails:
             return
 
         matches = re.findall(
-            br'>([\w\.\-\_\$]+?\.' + re.escape(hostnameBase).encode() + br')<',
+            br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')<',
             result['response-content']
         )
 
@@ -169,7 +178,7 @@ class MethodCertificateDetails:
                 (not item.decode() in self.hostnames) and
 
                 # Valid subdomain?
-                (item.decode().endswith('.' + hostnameBase))
+                (item.decode().endswith('.' + self.context.baseHostname))
             ):
             
                 # For unique results

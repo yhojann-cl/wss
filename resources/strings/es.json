@@ -1,37 +1,102 @@
 {
     "header": [
         "WSS (WHK Subdomains Scanner)",
-        "Versión  : v2.3.1 Beta",
+        "Versión  : v{version}",
         "Contacto : whk@elhacker.net",
         "-----------------------------------------",
         ""
     ],
     "usage": [
-        "Uso: {scriptname} [subdominio]",
+        "Uso: {scriptname} [opciones]",
+        "",
+        "Resultado: Un arbol de nombres de host (subdominios) encontrados agrupados por",
+        "dirección IP.",
+        "",
+        "Opciones:",
+        "  -h, --help     Muestra el mensaje de ayuda.",
+        "      --host     El nombre de host a buscar.",
+        "  -m, --methods  Listado de métodos.",
+        "                 Métodos disponibles:",
+        "                   0: Consulta DNS/AXFR.",
+        "                   1: Consultas DNS a registros comunes (TXT, MX, SPF, etc).",
+        "                   2: Busca en virustotal.com.",
+        "                   3: Busca en robtex.com.",
+        "                   4: Busca en crt.sh.",
+        "                   5: Busca en certificatedetails.com.",
+        "                   6: Busca en google.com (si tiene la api-key).",
+        "                   7: Busca en bing.com.",
+        "                   8: Busca en dnsdumpster.com.",
+        "                   9: Fuerza bruta de 4 caracteres.",
+        "                   a: Utiliza un dictionario de subdominios conocidos.",
+        "                 Ejemplos:",
+        "                   -m 01",
+        "                   -m 49a",
+        "                   -m 0123456789a",
+        "                 Por defecto se utilizan todos los métodos disponibles.",
+        "  -f, --filters  Listado de filtros.",
+        "                 Filtros disponibles:",
+        "                   0: Busca puertos abiertos por cada dirección IP. La búsqueda",
+        "                      es básica, no reemplaza a un software convencional como",
+        "                      nmap. Utiliza por defecto 500 threads.",
+        "                   1: Busca servicios HTTP en los puertos encontrados por el",
+        "                      filtro 0, en caso contrario utilizará un listado de",
+        "                      puertos http conocidos. Utiliza por defecto 20 threads.",
+        "                 Ejemplos:",
+        "                   -f 0",
+        "                   -f 01",
+        "                 Por defecto no se utiliza ningún filtro.",
         "",
         "Ejemplos:",
-        "  {scriptname} cl",
-        "  {scriptname} google.cl",
-        "  {scriptname} dev.google.cl"
+        "  {scriptname} --host com -m 6a -f01",
+        "  {scriptname} --host starbucks.com -f01",
+        "  {scriptname} --host dev.starbucks.com -f01"
     ],
     "result": {
-        "result-all-title" : "- Resultado final:",
-        "node": {
-            "root"         : "{count} Hosts encontrados",
-            "item-printed" : "    {item}"
+        "result-all-title"       : "- Resultado final:",
+        "unknown-ip-address-key" : "Dirección IP desconocida",
+        "node-tree"              : {
+            "root"            : "{count} Hosts encontrados",
+            "item-printed"    : "    {item}",
+            "hostnames-title" : "Hostnames"
         },
         "empty" : "! No hay resultados a mostrar.",
-        "finish": "Finalizado!\nSe ha guardado un registro de los subdominios encontrados en: {path}"
+        "finish": "- Finalizado!"
+    },
+    "log-file": {
+        "saving" : "- Guardando resultados en el archivo: {path}"
     },
     "errors": {
-        "bad-python-version"      : "Disculpa, Python 3.x, es requerido.",
-        "empty-hostname"        : "Necesita indicar un nombre de host.",
-        "empty-methods"         : "Necesita habilitar por lo menos un método de búsqueda."
+        "bad-python-version" : "Disculpa, Python 3.x, es requerido.",
+        "empty-hostname"     : "Necesita indicar un nombre de host.",
+        "empty-methods"      : "Necesita indicar por lo menos un método de búsqueda.",
+        "unknown-method"     : "El método '{method}' no existe.",
+        "unknown-filter"     : "El filtro '{filter}' no existe."
     },
-    "get-ip-address": {
-        "title"        : "- Obteniendo direcciones IP y asociando al árbol de resultados ...",
-        "item-progress": "    + {hostname} -> ",
-        "unknown"      : "Dirección IP desconocida"
+    "filter-begin" : "- Filtro {current}/{total}: {title}",
+    "filters": {
+        "ports" : {
+            "title"          : "Filtrando puertos ...",
+            "find"           : "    + {address} ...",
+            "skip"           : "    Omitdo (red interna).",
+            "found"          : "        {port} Abierto.",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "        Escaneando puerto: {port} ...",
+            "progress-wait"  : "        Esperando puertos restantes ...",
+            "node-tree"      : {
+                "ports-title"  : "Puertos",
+            }
+        },
+        "http": {
+            "title"          : "Buscando servicios HTTP ...",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "    {url} ... ",
+            "found"          : "    -> {url} ({title})",
+            "progress-wait"  : "        Esperando urls restantes ...",
+            "node-tree"      : {
+                "http-title"   : "Servicios HTTP",
+                "http-service" : "{url} ({title})"
+            }
+        }
     },
     "method-begin" : "- Método {current}/{total}: {title}",
     "methods" : {

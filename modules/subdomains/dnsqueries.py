@@ -18,7 +18,17 @@ class MethodDnsQueries:
         socket.setdefaulttimeout = 0.50
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['dns-queries']['title']
+            }
+        )
 
         # Have subdomains?
         found = False
@@ -35,7 +45,11 @@ class MethodDnsQueries:
 
             answer = None
             try:
-                answer = dns.resolver.query(hostnameBase, recordType, tcp=True)
+                answer = dns.resolver.query(
+                    self.context.baseHostname,
+                    recordType,
+                    tcp=True
+                )
 
             except Exception as e:
                 # Unable make the DNS query
@@ -51,7 +65,7 @@ class MethodDnsQueries:
 
                 # Find all possible full hostname in the plain response
                 matches = re.findall(
-                    r'([a-zA-Z0-9\.\-\_\$]+?\.' + re.escape(hostnameBase) + r')',
+                    r'([a-zA-Z0-9\.\-\_\$]+?\.' + re.escape(self.context.baseHostname) + r')',
                     plainRecord
                 )
 
@@ -62,10 +76,10 @@ class MethodDnsQueries:
                 for item in matches:
                     if(
                         # Is not same base hostname
-                        (item != hostnameBase) and
+                        (item != self.context.baseHostname) and
 
                         # Is a valid subdomain
-                        (item.endswith(hostnameBase)) and
+                        (item.endswith(self.context.baseHostname)) and
 
                         # Unique record for this response
                         (not item in hostnames)

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodBing:
@@ -16,24 +16,37 @@ class MethodBing:
         self.hostnames = []
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['bing']['title']
+            }
+        )
 
         # Find on first page
-        self.paginate(hostnameBase)
+        self.paginate()
 
 
-    def paginate(self, hostnameBase, pageNumber=1):
+    def paginate(self, pageNumber=1):
 
         searchContext = {
             'max-pages'   : 15,
             'max-result'  : 10,
             'start-index' : 1,
-            'query'       : 'domain:' + hostnameBase
+            'query'       : 'domain:' + self.context.baseHostname
         }
 
         if(self.hostnames):
             # Does not process known subdomains
-            searchContext['query'] += ' -domain:' + ' -domain:'.join(self.hostnames)
+            searchContext['query'] += (
+                ' -domain:' +
+                ' -domain:'.join(self.hostnames)
+            )
 
         # Current start item number
         searchContext['start-index'] = (
@@ -79,10 +92,10 @@ class MethodBing:
 
         # Example: <cite>https://foo<strong>domain.com</strong>
         matches = re.findall(
-            br'>([\w\.\-\_\$]+?\.' + re.escape(hostnameBase).encode() + br')',
+            br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')',
             result['response-content'].replace(
-                b'<strong>' + hostnameBase.encode(),
-                b'.' + hostnameBase.encode()
+                b'<strong>' + self.context.baseHostname.encode(),
+                b'.' + self.context.baseHostname.encode()
             )
         )
 
@@ -123,7 +136,4 @@ class MethodBing:
             return
 
         # Next page
-        self.paginate(
-            hostnameBase=hostnameBase,
-            pageNumber=pageNumber + 1
-        )
+        self.paginate(pageNumber=pageNumber + 1)

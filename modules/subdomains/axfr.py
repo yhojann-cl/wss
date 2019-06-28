@@ -20,16 +20,26 @@ class MethodAxfr(object):
         socket.setdefaulttimeout = 0.50
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['axfr']['title']
+            }
+        )
 
         # Get NS Servers
         self.context.out(
             self.context.strings['methods']['axfr']['getting-ns-servers']
         )
 
-        fqdn = hostnameBase
-        if(hostnameBase.count('.') > 1):
-            fqdn = '.'.join(hostnameBase.split('.')[:-1])
+        fqdn = self.context.baseHostname
+        if(self.context.baseHostname.count('.') > 1):
+            fqdn = '.'.join(self.context.baseHostname.split('.')[:-1])
 
         nameServers = []
         try:
@@ -53,8 +63,8 @@ class MethodAxfr(object):
         # Process each record
         for nameServer in nameServers:
             if(
-                (nameServer == hostnameBase) or
-                (not nameServer.endswith(hostnameBase))
+                (nameServer == self.context.baseHostname) or
+                (not nameServer.endswith(self.context.baseHostname))
             ):
                 continue
 
@@ -83,7 +93,7 @@ class MethodAxfr(object):
                 # Make the query (timeout in seconds)
                 axfr = dns.query.xfr(
                     where=nameServer,
-                    zone=hostnameBase,
+                    zone=self.context.baseHostname,
                     lifetime=5.0
                 )
 
@@ -138,7 +148,7 @@ class MethodAxfr(object):
                     # Add the full hostname found
                     # itemType = dns.rdatatype.to_text(rdataset.rdtype)
                     self.context.addHostName(
-                        hostname=str(name) + '.' + hostnameBase,
+                        hostname=str(name) + '.' + self.context.baseHostname,
                         messageFormat=self.context.strings['methods']['axfr']['item-found']
                     )
             

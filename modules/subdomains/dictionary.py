@@ -17,10 +17,13 @@ from random import random
 
 class MethodDictionary(object):
 
-    def __init__(self, context, dictionaryPath):
+    def __init__(self, context, dictionaryPath, title):
 
         # The main context
         self.context = context
+
+        # Header title
+        self.title = title
 
         # The fork context
         self.dictionary = {
@@ -51,10 +54,20 @@ class MethodDictionary(object):
         socket.setdefaulttimeout = 0.50
         
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.title
+            }
+        )
 
         # Main hostname base
-        self.dictionary['hostname-base'] = hostnameBase
+        self.dictionary['hostname-base'] = self.context.baseHostname
 
         if(self.haveWildcard()):
             self.context.out(

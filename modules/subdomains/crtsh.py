@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodCrtSh:
@@ -16,7 +16,17 @@ class MethodCrtSh:
         self.hostnames = []
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['crt-sh']['title']
+            }
+        )
 
         # Use the crawler bot
         crawler = WCrawler()
@@ -26,7 +36,7 @@ class MethodCrtSh:
 
         try:
             result = crawler.httpRequest(
-                url='https://crt.sh/?q=' + crawler.urlencode('%.' + hostnameBase) + '&output=json'
+                url='https://crt.sh/?q=' + crawler.urlencode('%.' + self.context.baseHostname) + '&output=json'
             )
 
             # Free memory (no navigation context)
@@ -71,7 +81,7 @@ class MethodCrtSh:
         for item in result:
 
             # Drop root wildcards
-            if(item['name_value'] == ('*.' + hostnameBase)):
+            if(item['name_value'] == ('*.' + self.context.baseHostname)):
                 continue
 
             if(not item['name_value'] in self.hostnames):

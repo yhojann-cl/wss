@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from modules.crawler import WCrawler
+from modules.helpers.crawler import WCrawler
 
 
 class MethodRobtex:
@@ -13,7 +13,17 @@ class MethodRobtex:
         self.context = context
 
 
-    def find(self, hostnameBase):
+    def find(self):
+
+        # Header message
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['robtex']['title']
+            }
+        )
 
         # Use the crawler bot
         crawler = WCrawler()
@@ -23,7 +33,7 @@ class MethodRobtex:
 
         try:
             result = crawler.httpRequest(
-                url='https://www.robtex.com/dns-lookup/' + crawler.urlencode(hostnameBase)
+                url='https://www.robtex.com/dns-lookup/' + crawler.urlencode(self.context.baseHostname)
             )
 
             # Free memory (no navigation context)
@@ -54,7 +64,7 @@ class MethodRobtex:
         )
 
         matches = re.findall(
-            br'>([\w\.\-\_\$]+?\.' + re.escape(hostnameBase).encode() + br')<',
+            br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')<',
             result['response-content']
         )
 

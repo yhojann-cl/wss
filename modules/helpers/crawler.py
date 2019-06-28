@@ -67,6 +67,10 @@ class WCrawler(object):
         if(not urlData['port']):
             urlData['port'] = 443 if (urlData['scheme'] == b'https') else 80
 
+        # Strip the custom port from the hostname
+        if(b':' in urlData['host']):
+            urlData['host'] = urlData['host'].split(b':')[0]
+            
         packet = None
 
         if(postData):
@@ -101,7 +105,7 @@ class WCrawler(object):
         self.lastUrl = url
 
         socketHandler = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socketHandler.settimeout(40)
+        socketHandler.settimeout(10)
         
         # Usa SSL?
         if(urlData['scheme'] == b'https'):
@@ -112,6 +116,7 @@ class WCrawler(object):
         else:
             socketWraped = socketHandler
 
+        # Connect to server
         socketWraped.connect((urlData['host'].decode(), int(urlData['port'])))
 
         socketWraped.send(packet)
