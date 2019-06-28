@@ -27,6 +27,7 @@ class MethodRobtex:
 
         # Use the crawler bot
         crawler = WCrawler()
+        crawler.defaultTimeout = 30
 
         # html result
         result = None

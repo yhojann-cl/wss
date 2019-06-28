@@ -18,6 +18,7 @@ class WCrawler(object):
 
         self.cookies = {}
         self.lastUrl = None
+        self.defaultTimeout = 10 # in seconds
 
 
     def clearContext(self):
@@ -105,7 +106,7 @@ class WCrawler(object):
         self.lastUrl = url
 
         socketHandler = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socketHandler.settimeout(10)
+        socketHandler.settimeout(self.defaultTimeout)
         
         # Usa SSL?
         if(urlData['scheme'] == b'https'):

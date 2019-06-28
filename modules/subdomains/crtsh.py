@@ -30,6 +30,7 @@ class MethodCrtSh:
 
         # Use the crawler bot
         crawler = WCrawler()
+        crawler.defaultTimeout = 60
 
         # json result
         result = None
