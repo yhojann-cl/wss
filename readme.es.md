@@ -1,4 +1,4 @@
-# WSS v2.4.1-beta
+# WSS v2.4.2-beta
 
 WSS (WHK Subdomains Scanner) es una herramienta diseñada para **pentesters**, la
 cual realiza búsqueda de subdominios y realiza acciones sobre cada hostname
@@ -43,7 +43,7 @@ Vamos al grano:
 
     $ python3 wss.py --help
     WSS (WHK Subdomains Scanner)
-    Version  : v2.4.1-beta
+    Version  : v2.4.2-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        
