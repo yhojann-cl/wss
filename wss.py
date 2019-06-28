@@ -45,7 +45,7 @@ class Controller(object):
         self.version = {
             'major'   : 2,
             'minor'   : 4,
-            'patch'   : 1,
+            'patch'   : 2,
             'release' : 'beta'
         }
 
