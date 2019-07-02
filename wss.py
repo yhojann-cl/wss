@@ -45,7 +45,7 @@ class Controller(object):
         self.version = {
             'major'   : 2,
             'minor'   : 4,
-            'patch'   : 2,
+            'patch'   : 3,
             'release' : 'beta'
         }
 
@@ -286,8 +286,18 @@ class Controller(object):
             self.out(self.strings['result']['empty'])
             return
 
-        # Sorted results
-        # self.results = sorted(self.results)
+        # Sorted results by ip address
+        self.results['ip-address']['items'] = (
+            { k: v for k, v in sorted(self.results['ip-address']['items'].items()) }
+        )
+
+        # Sort hostnames
+        for ipAddress in self.results['ip-address']['items'].keys():
+            self.results['ip-address']['items'][ipAddress]['items']['hostnames']['items'] = (
+                { k: v for k, v in sorted(self.results['ip-address']['items'][ipAddress]['items']['hostnames']['items'].items()) }
+            )
+        
+        # TODO: Unimplemented.
 
         # Call all filters
         self.processAllFilters()
@@ -361,46 +371,6 @@ class Controller(object):
         # Make nodes
         nodeRoot = self.makeNodes(self.results['ip-address'])
 
-#        self.out(json.dumps(
-#            self.results,
-#            indent=4,
-#            sort_keys=True
-#        ))
-
-##        # Order by ip address
-##        self.results = { k: v for k, v in sorted(self.results.items()) }
-#
-#        # Tree structure
-#        nodeRoot = Node(
-#            self.parseString(
-#                message=self.strings['result']['node-tree']['root'],
-#                parseDict={
-#                    'count': self.progress['total-hostnames']
-#                }
-#            )
-#        )
-#
-#        for ipAddress in self.results.keys():
-#
-#            # Node of ip address
-#            nodeIpAddress = Node(ipAddress, parent=nodeRoot)
-#
-#            # For each filter
-#            for keySubitem in self.results[ipAddress].keys():
-#
-#                # Node of subitem
-#                nodeSubitem = Node(
-#                    # Uppercase first letter
-#                    keySubitem[0].upper() + keySubitem[1:],
-#                    parent=nodeIpAddress
-#                )
-#
-#                # For each value in subitem
-#                for itemValue in self.results[ipAddress][keySubitem]:
-#
-#                    # Node of value of subitem
-#                    nodeValue = Node(itemValue, parent=nodeSubitem)
-#
         # Final tree as string
         message = []
 
@@ -487,7 +457,6 @@ class Controller(object):
         print(self.parseString(message, parseDict), end=end)
 
 
-
     def addHostName(self, hostname, messageFormat=None):
 
         # Remove wilcards
@@ -539,7 +508,7 @@ class Controller(object):
             message=messageFormat,
             parseDict={
                 'hostname'   : hostname,
-                'ip-address' : ipAddress
+                'ip-address' : (self.strings['result']['unknown-ip-address-key'] if ipAddress == 'unknown' else ipAddress)
             }
         )
 

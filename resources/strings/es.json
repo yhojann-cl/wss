@@ -76,7 +76,7 @@
     "filters": {
         "ports" : {
             "title"          : "Filtrando puertos ...",
-            "find"           : "    + {address} ...",
+            "find"           : "    -> {current}/{total} : {address} ...",
             "skip"           : "    Omitdo (red interna).",
             "found"          : "        {port} Abierto.",
             "progress-clear" : "\r\u001b[2K",
@@ -108,19 +108,19 @@
             "ns-progress"              : "        -> {nameserver} ... ",
             "ns-vulnerable"            : "Vulnerable! ({count} registros encontrados).",
             "getting-items"            : "    Registros encontrados:",
-            "item-found"               : "        {hostname}",
+            "item-found"               : "        {hostname} ({ip-address})",
             "ns-not-vulnerable"        : "No es vulnerable."
         },
         "dns-queries"         : {
             "title"                    : "Obtención desde registros NS, TXT, SPF y MX",
             "title-query-type"         : "    Realizando consulta {type} ...",
-            "item-found"               : "        -> {hostname} Encontrado.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
             "no-items-found"           : "    ! No hay registros que apunten al hostname principal."
         },
         "virus-total"         : {
             "title"                    : "Obtención desde virustotal.com",
             "paginating"               : "    Obteniendo desde página {number} ...",
-            "item-found"               : "        -> {hostname} Encontrado.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
             "no-more"                  : "    ! No hay más resultados.",
             "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
             "no-connect"               : "    ! Imposible conectar al servidor.",
@@ -131,7 +131,7 @@
             "no-connect"               : "    ! Imposible conectar al servidor.",
             "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
             "empty"                    : "    No hay subdominios encontrados.",
-            "item-found"               : "    -> {hostname} Encontrado."
+            "item-found"               : "    -> {hostname} ({ip-address}) Encontrado."
         },
         "crt-sh"              : {
             "title"                    : "Obtención desde crt.sh",
@@ -139,7 +139,7 @@
             "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
             "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API).",
             "empty"                    : "    No hay subdominios encontrados.",
-            "item-found"               : "    -> {hostname} Encontrado."
+            "item-found"               : "    -> {hostname} ({ip-address}) Encontrado."
         },
         "certificate-details" : {
             "title"                    : "Obtención desde certificatedetails.com",
@@ -147,7 +147,7 @@
             "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
             "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API).",
             "empty"                    : "    No hay subdominios encontrados.",
-            "item-found"               : "        -> {hostname} Encontrado.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
             "find-links"               : "    Buscando en enlaces conocidos ...",
             "find-link"                : "    Buscando en enlace {link-id}/{total-links} ..."
         },
@@ -157,7 +157,7 @@
             "no-connect"               : "    ! Imposible conectar al servidor.",
             "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
             "pagination"               : "    Paginando ...",
-            "item-found"               : "        -> {hostname} Encontrado.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
             "no-more-results"          : "    No hay más resultados.",
             "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API)."
         },
@@ -166,7 +166,7 @@
             "no-connect"               : "    ! Imposible conectar al servidor.",
             "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
             "pagination"               : "    Paginando ...",
-            "item-found"               : "        -> {hostname} Encontrado.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
             "no-more-results"          : "    No hay más resultados."
         },
         "dnsdumpster"         : {
@@ -177,7 +177,7 @@
             "no-xsrf-token-found"      : "    ! Imposible obtener el token XSRF de la sesión.",
             "getting-subdomains"       : "    Obteniendo los datos utilizando la sesión obtenida ...",
             "empty"                    : "    No hay subdominios encontrados.",
-            "item-found"               : "        -> {hostname} Encontrado."
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado."
         },
         "dictionary"          : {
             "wildcard-detected"        : "    ! Se ha detectado un comodín como subdominio, no se puede revisar.",
@@ -193,7 +193,7 @@
                 "    Threads     : {total-threads}",
                 "    Reintentos  : {total-retries}"
             ],
-            "item-found"                : "        -> {hostname} Encontrado."
+            "item-found"                : "        -> {hostname} ({ip-address}) Encontrado."
         },
         "dictionary-4"        : {
             "title"                    : "Obtención a traves de fuerza bruta (4 carácteres)"

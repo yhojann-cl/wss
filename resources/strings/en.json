@@ -75,7 +75,7 @@
     "filters": {
         "ports" : {
             "title"          : "Filtering ports...",
-            "find"           : "    + {address} ... ",
+            "find"           : "    -> {current}/{total} : {address} ...",
             "skip"           : "    Omitted (internal network).",
             "found"          : "        {port} Open.",
             "progress-clear" : "\r\u001b[2K",
@@ -107,19 +107,19 @@
             "ns-progress"              : "        -> {nameserver} ... ",
             "ns-vulnerable"            : "Vulnerable! ({count} records found).",
             "getting-items"            : "    Records found:",
-            "item-found"               : "        {hostname}",
+            "item-found"               : "        {hostname} ({ip-address})",
             "ns-not-vulnerable"        : "isn't vulnerable."
         },
         "dns-queries"         : {
             "title"                    : "Getting from NS, TXT, SPF y MX records",
             "title-query-type"         : "    Executing {type} query...",
-            "item-found"               : "        -> {hostname} found.",
+            "item-found"               : "        -> {hostname} ({ip-address}) found.",
             "no-items-found"           : "    ! No records redirect to primary hostname."
         },
         "virus-total"         : {
             "title"                    : "Getting from virustotal.com",
             "paginating"               : "    Getting from page {number} ...",
-            "item-found"               : "        -> {hostname} found.",
+            "item-found"               : "        -> {hostname} ({ip-address}) found.",
             "no-more"                  : "    ! No more results.",
             "wrong-status-http"        : "    ! The servver not reply correctly: HTTP status {id}",
             "no-connect"               : "    ! Unable connect to server.",
@@ -130,7 +130,7 @@
             "no-connect"               : "    ! Unable connect to server.",
             "wrong-status-http"        : "    ! The servver not reply correctly: HTTP status {id}",
             "empty"                    : "    No subdomains found.",
-            "item-found"               : "    -> {hostname} found."
+            "item-found"               : "    -> {hostname} ({ip-address}) found."
         },
         "crt-sh"              : {
             "title"                    : "Getting from crt.sh",
@@ -138,7 +138,7 @@
             "wrong-status-http"        : "    ! The servver not reply correctly: HTTP status {id}",
             "corrupt-response"         : "    ! The server not reply correctly (wrong json API).",
             "empty"                    : "    No subdomains found.",
-            "item-found"               : "    -> {hostname} found."
+            "item-found"               : "    -> {hostname} ({ip-address}) found."
         },
         "certificate-details" : {
             "title"                    : "Getting from certificatedetails.com",
@@ -146,7 +146,7 @@
             "wrong-status-http"        : "    ! The servver not reply correctly: HTTP status {id}",
             "corrupt-response"         : "    ! The server not reply correctly (wrong json API).",
             "empty"                    : "    No subdomains found.",
-            "item-found"               : "        -> {hostname} found.",
+            "item-found"               : "        -> {hostname} ({ip-address}) found.",
             "find-links"               : "    Searching knows links ...",
             "find-link"                : "    Searching in link {link-id}/{total-links} ..."
         },
@@ -156,7 +156,7 @@
             "no-connect"               : "    ! Unable connect to server.",
             "wrong-status-http"        : "    ! The servver not reply correctly: HTTP status {id}",
             "pagination"               : "    Paginate now...",
-            "item-found"               : "        -> {hostname} found.",
+            "item-found"               : "        -> {hostname} ({ip-address}) found.",
             "no-more-results"          : "    No more results.",
             "corrupt-response"         : "    ! The server not reply correctly (wrong json API)."
         },
@@ -165,7 +165,7 @@
             "no-connect"               : "    ! Unable connect to server.",
             "wrong-status-http"        : "    ! The servver not reply correctly: HTTP status {id}",
             "pagination"               : "    Paginate now...",
-            "item-found"               : "        -> {hostname} found.",
+            "item-found"               : "        -> {hostname} ({ip-address}) found.",
             "no-more-results"          : "    No more results."
         },
         "dnsdumpster"         : {
@@ -176,7 +176,7 @@
             "no-xsrf-token-found"      : "    ! Unable obtain XSRF token session.",
             "getting-subdomains"       : "    Getting data using session obtained...",
             "empty"                    : "    No subdomains found.",
-            "item-found"               : "        -> {hostname} found."
+            "item-found"               : "        -> {hostname} ({ip-address}) found."
         },
         "dictionary"          : {
             "wildcard-detected"        : "    ! Has been detected a wilcard as a subdomain, can't check.",
@@ -193,10 +193,10 @@
                         "    Retries   : {total-retries}"
                     
             ],
-            "item-found"         : "        -> {hostname} found."
+            "item-found"         : "        -> {hostname} ({ip-address}) found."
         },
         "dictionary-4"        : {
-            "title"                 : "Getting through brutal force (4 chars)"
+            "title"                 : "Getting through brute force (4 chars)"
         },
         "dictionary-words"    : {
             "title"                 : "Getting through a knows subdomains dictionary"

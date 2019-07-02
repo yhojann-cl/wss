@@ -46,7 +46,10 @@ class FilterPorts(object):
         )
 
         # For each ip address
+        itemNumber = 0
         for ipAddress in self.context.results['ip-address']['items'].keys():
+
+            itemNumber += 1
 
             if(ipAddress == 'unknown'):
                 continue
@@ -54,16 +57,18 @@ class FilterPorts(object):
             # Main structure for current ip address
             self.context.results['ip-address']['items'][ipAddress]['items']['ports'] = {
                 'title' : self.context.strings['filters']['ports']['node-tree']['ports-title'],
-                'items' : self.findPorts(ipAddress)
+                'items' : self.findPorts(ipAddress, itemNumber)
             }
 
 
-    def findPorts(self, ipAddress):
+    def findPorts(self, ipAddress, itemNumber):
 
         self.context.out(
             message=self.context.strings['filters']['ports']['find'],
             parseDict={
-                'address': ipAddress
+                'address': ipAddress,
+                'current': itemNumber,
+                'total'  : len(self.context.results['ip-address']['items'].keys())
             }
         )
 
@@ -83,8 +88,8 @@ class FilterPorts(object):
         self.hostnameContext['threads-handlers']   = [ ]
         self.hostnameContext['current-ip-address'] = ipAddress
 
-        # 500 Threads by default
-        for threadNumber in range(1, 500):
+        # 1024 Threads by default
+        for threadNumber in range(1, 1024):
 
             # Thread handler
             t = threading.Thread(target=self.threadCheck)
@@ -110,7 +115,8 @@ class FilterPorts(object):
             end=''
         )
 
-        return self.hostnameContext['ports-found']
+        # Sorted results by port number
+        return { k: v for k, v in sorted(self.hostnameContext['ports-found'].items()) }
 
 
     def threadCheck(self):

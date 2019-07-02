@@ -171,12 +171,6 @@ class FilterHttpServices(object):
 
                 self.findHttpServices(ipAddress, hostname)
 
-                # # Main structure for current ip address
-                # self.context.results['ip-address']['items'][ipAddress]['items']['http'] = {
-                #     'title' : self.context.strings['filters']['http']['node-tree']['http-title'],
-                #     'items' : self.findHttpServices(ipAddress, hostname)
-                # }
-
 
     def findHttpServices(self, ipAddress, hostname):
 
