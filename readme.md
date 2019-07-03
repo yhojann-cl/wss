@@ -1,105 +1,109 @@
-# WSS v2.4.4-beta
+# WSS v2.4.5-beta
 
-WSS (WHK Subdomains Scanner) is a tool for **pentesters**, which performs the
-search of subdomains and performs actions on each host name found.
+WSS (WHK Subdomains Scanner) es una herramienta diseñada para **pentesters**, la
+cual realiza búsqueda de subdominios y realiza acciones sobre cada hostname
+encontrado.
 
-The application works with two groups of modules:
+La aplicación funciona con dos grupos de módulos:
 
-- Subdomain search methods.
-- Filters.
+- Métodos de búsqueda de subdominios.
+- Filtros.
 
-The **filters** are modules that process the results to add more information
-such as the basic scan of ports and the search for services *http*.
+Los **filtros** son módulos que procesan los resultados para añadir más
+información como por ejemplo el barrido básico de puertos y la búsqueda de
+servicios *http*.
 
 
-## Requirements
+## Requerimientos
 
 - Python 3.
-- Google API-Key in `modules/subdomains/google.py` (optional, by default comes a
-  gift).
-- Installation of the modules declared in `requirements.txt` using pip3.
+- Google API-Key en `modules/subdomains/google.py` (opcional, por defecto viene
+  una de regalo).
+- Instalación de los módulos declarados en `requirements.txt` utilizando pip3.
 
-Note: Character coding problems have been reported using Microsoft Windows, so
-it is recommended for the moment that we are looking for a solution, using some
-GNU / Linux distribution since the encoding of the files is better respected.
+Nota: Se han reportado problemas de codificación de caracteres utilizando
+Microsoft Windows, por ello se recomienda por el momento que buscamos una
+solución, utilizar alguna distribución de GNU/Linux ya que se respeta mejor
+la codificación de los archivos.
 
 
-## Installation
+## Instalación
 
-It is not necessary an installation in the Operating System, it is enough with
-the installation of the required modules in `requirements.txt` to work.
+No es necesario una instalación en el Sistema Operativo, basta con la
+instalación de los módulos requeridos en `requirements.txt` para funcionar.
 
-The requirements can be installed as follows:
+Los requrimientos se pueden instalar de la siguiente manera:
 
     pip3 install --user -r requirements.txt
 
 
-## Use
+## Uso
 
-Let's cut to the chase:
+Vamos al grano:
 
-    $ python3 wss.py
+    $ python3 wss.py --help
     WSS (WHK Subdomains Scanner)
-    Version : v2.4.4-beta
+    Version  : v2.4.5-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        
-    Usage: wss.py [options]
+    Uso: wss.py [opciones]
        
-    Result: A tree of host names (subdomains) found grouped by IP address.
+    Resultado: Un arbol de nombres de dominio (subdominios) encontrados 
+    agrupados por dirección IP.
        
-    Options:
-      -h, --help     Show the help message.
-          --host     The host name to search.
-      -m, --methods  List of methods.
-                     Available methods:
-                       0: DNS/AXFR query.
-                       1: DNS queries to common records (TXT, MX, SPF, etc).
-                       2: Search on virustotal.com.
-                       3: Search on robtex.com.
-                       4: Search on crt.sh.
-                       5: Search on certificatedetails.com.
-                       6: Search on google.com (if have the api-key).
-                       7: Search on bing.com.
-                       8: Search on dnsdumpster.com.
-                       9: Brute force of 4 characters.
-                       a: Use a dictionary of known subdomains.
-                     Examples:
+    Opciones:
+      -h, --help     Muestra el mensaje de ayuda.
+          --host     El nombre de dominio a buscar.
+      -m, --methods  Listado de métodos.
+                     Métodos disponibles:
+                       0: Consulta DNS/AXFR.
+                       1: Consultas DNS a registros comunes (TXT, MX, SPF, etc).
+                       2: Busca en virustotal.com.
+                       3: Busca en robtex.com.
+                       4: Busca en crt.sh.
+                       5: Busca en certificatedetails.com.
+                       6: Busca en google.com (si tiene la api-key).
+                       7: Busca en bing.com.
+                       8: Busca en dnsdumpster.com.
+                       9: Fuerza bruta de 4 caracteres.
+                       a: Utiliza un dictionario de subdominios conocidos.
+                     Ejemplos:
                        -m 01
                        -m 49a
                        -m 0123456789a
-                     By default all available methods are used.
-      -f, --filters  List of filters.
-                     Available filters:
-                       0: Search open ports for each IP address. The search is
-                          basic, it does not replace conventional software such
-                          as nmap. Use by default 500 threads.
-                       1: Search HTTP services in the ports found by filter 0,
-                          otherwise it will use a list of known http ports. Use
-                          by default 20 threads.
-                     Examples:
+                     Por defecto se utilizan todos los métodos disponibles.
+      -f, --filters  Listado de filtros.
+                     Filtros disponibles:
+                       0: Busca puertos abiertos por cada dirección IP. La búsqueda
+                          es básica, no reemplaza a un software convencional como
+                          nmap. Utiliza por defecto 500 threads.
+                       1: Busca servicios HTTP en los puertos encontrados por el
+                          filtro 0, en caso contrario utilizará un listado de
+                          puertos http conocidos. Utiliza por defecto 20 threads.
+                     Ejemplos:
                        -f 0
                        -f 01
-                     By default, no filter is used.
+                     Por defecto no se utiliza ningún filtro.
        
-    Examples:
+    Ejemplos:
       wss.py --host com -m 6a -f01
       wss.py --host starbucks.com -f01
       wss.py --host dev.starbucks.com -f01
 
-An example of the final result of a search:
+Un ejemplo del resultado final de una búsqueda:
 
-    3 hosts were found
+    3 hosts encontrados
         ├── x.x.x.x
         │   ├── Hostnames
         │   │   ├── ssh.example.com
         │   │   └── www.example.com
-        │   │       └── HTTP services
+        │   │       └── Servicios HTTP
         │   │           └── http://www.example.com/ (Example Website)
         │   └── Ports
         │       ├── 22
         │       └── 80
-        └── Unknown IP address
+        └── Direcciones IP desconocidas
             └── Hostnames
                 ├── foo.example.com
                 └── bar.example.com
@@ -107,28 +111,28 @@ An example of the final result of a search:
 
 ## Lenguaje
 
-The application has translation files in `resources/strings/`. To change the
-language, simply edit the `wss.py` file, search:
+La aplicación cuenta con archivos de traducciones en `resources/strings/`. Para
+cambiar el lenguaje basta con editar el archivo `wss.py`, buscar:
 
     with open('resources/strings/en.json', 'r') as fileHandler:
 
-And replace with the desired translation file. You can also create your own
-translation files.
+Y reemplazar por el archivo de la traducción deseada. También puedes crear tus
+propios archivos sde traducciones.
 
 
-## Advantage
+## Ventajas
 
-In addition to search in public services already known, you can use brute force
-by obtaining new subdomains without using databases. It also provides a tree of
-associated IP addresses to know redundant subdomains, which saves time in
-reviewing the services.
+Además de buscar en los servicios públicos ya conocidos, puede usar la fuerza
+bruta obteniendo subdominios nuevos sin utilizar bases de datos. También
+proporciona un árbol de direcciones IP asociadas para conocer subdominios
+redundantes, lo que ahorra tiempo en la revisión de los servicio.
 
-The application has a modular separation of the methods and filters,
-facilitating the creation of new customized modules.
+La aplicación cuenta con una separación modular de los métodos y filtrados,
+facilitando la creación de nuevos módulos personalizados.
 
 
-## Contributions
+## Contribuciones
 
-- Ideas and reports of problems: https://github.com/WHK102/wss/issues
-- Help with corrections: https://github.com/WHK102/wss/pulls
-- Donations via paypal: yhojann.aguilera@gmail.com
+- Ideas y reportes de problemas: https://github.com/WHK102/wss/issues
+- Ayuda con correcciones: https://github.com/WHK102/wss/pulls
+- Donaciones vía paypal: yhojann.aguilera@gmail.com
