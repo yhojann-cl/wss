@@ -92,9 +92,9 @@ Vamos al grano:
                      Por defecto no se utiliza ningún filtro.
        
     Ejemplos:
-      wss.py --host com -m 6a -f01
-      wss.py --host starbucks.com -f01
-      wss.py --host dev.starbucks.com -f01
+      wss.py --host com -m 6a -f 01
+      wss.py --host starbucks.com -f 01
+      wss.py --host dev.starbucks.com -f 01
 
 Un ejemplo del resultado final de una búsqueda:
 
