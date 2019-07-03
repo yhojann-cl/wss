@@ -1,8 +1,8 @@
 # WSS v2.4.5-beta
 
 WSS (WHK Subdomains Scanner) es una herramienta diseñada para **pentesters**, la
-cual realiza búsqueda de subdominios y realiza acciones sobre cada hostname
-encontrado.
+cual realiza búsqueda de subdominios y realiza acciones sobre cada nombre de
+dominio encontrado.
 
 La aplicación funciona con dos grupos de módulos:
 
