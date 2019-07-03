@@ -100,7 +100,7 @@ An example of the final result of a search:
         │   │   ├── ssh.example.com
         │   │   └── www.example.com
         │   │       └── HTTP services
-        │   │           └── http://www.example.com/ (Example Website)
+        │   │           └── http://www.example.com/ (HTTP-200: Example Website)
         │   └── Ports
         │       ├── 22
         │       └── 80

@@ -101,17 +101,17 @@ Un ejemplo del resultado final de una búsqueda:
     3 hosts encontrados
         ├── x.x.x.x
         │   ├── Hostnames
-        │   │   ├── ssh.example.com
-        │   │   └── www.example.com
+        │   │   ├── ssh.ejemplo.com
+        │   │   └── www.ejemplo.com
         │   │       └── Servicios HTTP
-        │   │           └── http://www.example.com/ (Example Website)
+        │   │           └── http://www.ejemplo.com/ (HTTP-200: Ejemplo WEB)
         │   └── Ports
         │       ├── 22
         │       └── 80
         └── Direcciones IP desconocidas
             └── Hostnames
-                ├── foo.example.com
-                └── bar.example.com
+                ├── foo.ejemplo.com
+                └── bar.ejemplo.com
     
 
 ## Lenguaje
