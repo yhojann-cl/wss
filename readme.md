@@ -1,4 +1,4 @@
-# WSS v2.4.5-beta
+# WSS v2.4.6-beta
 
 [![Chileno](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
 [![Licencia](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
@@ -48,7 +48,7 @@ Vamos al grano:
 
     $ python3 wss.py --help
     WSS (WHK Subdomains Scanner)
-    Version  : v2.4.5-beta
+    Version  : v2.4.6-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        
@@ -116,13 +116,13 @@ Un ejemplo del resultado final de una búsqueda:
 
 ## Lenguaje
 
-La aplicación cuenta con archivos de traducciones en `resources/strings/`. Para
-cambiar el lenguaje basta con editar el archivo `wss.py`, buscar:
+Los archivos de traducciones y textos se encuentran en el directorio
+`resources/strings/*.json` donde cada nombre de archivo es igual al código iso
+del lenguaje.
 
-    with open('resources/strings/en.json', 'r') as fileHandler:
-
-Y reemplazar por el archivo de la traducción deseada. También puedes crear tus
-propios archivos de traducciones.
+La aplicación detectará el lenguaje utilizado por defecto en el Sistema
+Operativo y buscará el archivo correspondiente de traducción, si no existe
+utilizará el lenguaje por defecto `en.json`.
 
 
 ## Ventajas
