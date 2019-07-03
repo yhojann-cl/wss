@@ -1,5 +1,10 @@
 # WSS v2.4.5-beta
 
+[![Chileno](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
+[![Licencia](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![Contribuciones](https://img.shields.io/badge/contributions-welcome-blue.svg)](https://github.com/WHK102/wss/issues)
+[![Donaciones](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/whk102)
+
 WSS (WHK Subdomains Scanner) es una herramienta diseñada para **pentesters**, la
 cual realiza búsqueda de subdominios y realiza acciones sobre cada nombre de
 dominio encontrado.
@@ -129,10 +134,3 @@ redundantes, lo que ahorra tiempo en la revisión de los servicio.
 
 La aplicación cuenta con una separación modular de los métodos y filtrados,
 facilitando la creación de nuevos módulos personalizados.
-
-
-## Contribuciones
-
-- Ideas y reportes de problemas: https://github.com/WHK102/wss/issues
-- Ayuda con correcciones: https://github.com/WHK102/wss/pulls
-- Donaciones vía paypal: yhojann.aguilera@gmail.com
