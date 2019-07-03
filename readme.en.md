@@ -1,4 +1,4 @@
-# WSS v2.4.7-beta
+# WSS v2.4.8-beta
 
 [![Chilean](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
 [![License](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
@@ -45,7 +45,7 @@ Let's cut to the chase:
 
     $ python3 wss.py
     WSS (WHK Subdomains Scanner)
-    Version : v2.4.7-beta
+    Version : v2.4.8-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        
@@ -94,7 +94,7 @@ Let's cut to the chase:
 
 An example of the final result of a search:
 
-    3 hosts were found
+    4 subdomains were found
         ├── x.x.x.x
         │   ├── Hostnames
         │   │   ├── ssh.example.com

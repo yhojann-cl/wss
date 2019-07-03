@@ -54,7 +54,7 @@
         "result-all-title"       : "- Result:",
         "unknown-ip-address-key" : "Unknown IP address",
         "node-tree"              : {
-            "root"            : "{count} hosts were found",
+            "root"            : "{count} subdomains were found",
             "item-printed"    : "    {item}",
             "hostnames-title" : "Hostnames"
         },

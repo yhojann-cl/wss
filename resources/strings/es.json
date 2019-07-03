@@ -47,15 +47,15 @@
         "                 Por defecto no se utiliza ningún filtro.",
         "",
         "Ejemplos:",
-        "  {scriptname} --host com -m 6a -f01",
-        "  {scriptname} --host starbucks.com -f01",
-        "  {scriptname} --host dev.starbucks.com -f01"
+        "  {scriptname} --host com -m 6a -f 01",
+        "  {scriptname} --host starbucks.com -f 01",
+        "  {scriptname} --host dev.starbucks.com -f 01"
     ],
     "result": {
         "result-all-title"       : "- Resultado final:",
         "unknown-ip-address-key" : "Dirección IP desconocida",
         "node-tree"              : {
-            "root"            : "{count} Hosts encontrados",
+            "root"            : "{count} subdominios encontrados",
             "item-printed"    : "    {item}",
             "hostnames-title" : "Hostnames"
         },
