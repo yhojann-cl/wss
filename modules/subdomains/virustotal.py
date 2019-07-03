@@ -123,7 +123,7 @@ class MethodVirusTotal:
             (result['links'])
         ):
             # Continua con la siguiente página
-            self.find(
+            self.findInApi(
                 nextUrl=str(result['links']['next']),
                 pageId=(pageId + 1)
             )
