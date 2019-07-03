@@ -126,12 +126,14 @@ class MethodCertificateDetails:
 
     def findInLink(self, url, linkId, totalLinks):
 
+        # Header message of link
         self.context.out(
             message=self.context.strings['methods']['certificate-details']['find-link'],
             parseDict={
                 'link-id'     : linkId,
                 'total-links' : totalLinks
-            }
+            },
+            end=''
         )
         
         # Use the crawler bot
@@ -148,18 +150,19 @@ class MethodCertificateDetails:
 
         except Exception as e:
             self.context.out(
-                self.context.strings['methods']['certificate-details']['no-connect']
+                self.context.strings['methods']['certificate-details']['find-clear'],
+                end=''
             )
             return
 
+        self.context.out(
+            self.context.strings['methods']['certificate-details']['find-clear'],
+            end=''
+        )
+
         # The http response is success?
         if(result['status-code'] != 200):
-            self.context.out(
-                message=self.context.strings['methods']['certificate-details']['wrong-status-http'],
-                parseDict={
-                    'id': result['status-code']
-                }
-            )
+            # Nothing
             return
 
         matches = re.findall(

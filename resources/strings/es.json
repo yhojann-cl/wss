@@ -149,6 +149,7 @@
             "empty"                    : "    No hay subdominios encontrados.",
             "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
             "find-links"               : "    Buscando en enlaces conocidos ...",
+            "find-clear"               : "\r\u001b[2K",
             "find-link"                : "    Buscando en enlace {link-id}/{total-links} ..."
         },
         "google"              : {

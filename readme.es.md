@@ -43,7 +43,7 @@ Vamos al grano:
 
     $ python3 wss.py --help
     WSS (WHK Subdomains Scanner)
-    Version  : v2.4.3-beta
+    Version  : v2.4.4-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        

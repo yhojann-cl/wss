@@ -45,7 +45,7 @@ class Controller(object):
         self.version = {
             'major'   : 2,
             'minor'   : 4,
-            'patch'   : 3,
+            'patch'   : 4,
             'release' : 'beta'
         }
 
@@ -454,7 +454,11 @@ class Controller(object):
     def out(self, message, parseDict=None, end='\n'):
 
         # Print the message
-        print(self.parseString(message, parseDict), end=end)
+        print(
+            self.parseString(message, parseDict),
+            end=end,
+            flush=True
+        )
 
 
     def addHostName(self, hostname, messageFormat=None):

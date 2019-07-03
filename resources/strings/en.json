@@ -147,7 +147,8 @@
             "corrupt-response"         : "    ! The server not reply correctly (wrong json API).",
             "empty"                    : "    No subdomains found.",
             "item-found"               : "        -> {hostname} ({ip-address}) found.",
-            "find-links"               : "    Searching knows links ...",
+            "find-links"               : "    Searching known links ...",
+            "find-clear"               : "\r\u001b[2K",
             "find-link"                : "    Searching in link {link-id}/{total-links} ..."
         },
         "google"              : {
@@ -199,7 +200,7 @@
             "title"                 : "Getting through brute force (4 chars)"
         },
         "dictionary-words"    : {
-            "title"                 : "Getting through a knows subdomains dictionary"
+            "title"                 : "Getting through a known subdomains dictionary"
         }
     }
 }
