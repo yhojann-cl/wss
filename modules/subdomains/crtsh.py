@@ -9,16 +9,16 @@ class MethodCrtSh:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
-        # Unique only
+        # Variable que permite entregar subdominios únicos (no duplicados)
         self.hostnames = []
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -28,11 +28,11 @@ class MethodCrtSh:
             }
         )
 
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
         crawler.defaultTimeout = 60
 
-        # json result
+        # El resultado es de tipo json
         result = None
 
         try:
@@ -40,7 +40,7 @@ class MethodCrtSh:
                 url='https://crt.sh/?q=' + crawler.urlencode('%.' + self.context.baseHostname) + '&output=json'
             )
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
@@ -49,7 +49,7 @@ class MethodCrtSh:
             )
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['crt-sh']['wrong-status-http'],
@@ -60,7 +60,7 @@ class MethodCrtSh:
             return
 
         try:
-            # Convert the result into json object
+            # Convierte el resultado en un objeto de tipo json
             result = json.loads(result['response-content'])
 
         except Exception as e:
@@ -78,20 +78,18 @@ class MethodCrtSh:
             )
             return
 
-        # Process each hostname
+        # Procesa cada nombre de dominio encontrado
         for item in result:
 
-            # Drop root wildcards
-            if(item['name_value'] == ('*.' + self.context.baseHostname)):
+            # Evita los resultados duplicados utilizando la pila local
+            if(item['name_value'] in self.hostnames):
                 continue
 
-            if(not item['name_value'] in self.hostnames):
+            # Agrega el subdominio encontrado a la pila local
+            self.hostnames.append(item['name_value'])
 
-                # For unique resulsts
-                self.hostnames.append(item['name_value'])
-
-                # Add full hostname
-                self.context.addHostName(
-                    hostname=item['name_value'],
-                    messageFormat=self.context.strings['methods']['crt-sh']['item-found']
-                )
+            # Agrega el subdominio encontrado a la pila global de resultados
+            self.context.addHostName(
+                hostname=item['name_value'],
+                messageFormat=self.context.strings['methods']['crt-sh']['item-found']
+            )

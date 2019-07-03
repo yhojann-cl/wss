@@ -1,4 +1,4 @@
-# Install: pip3 install --user -r requirements.txt
+# pip3 install --user -r requirements.txt
 
 dnspython==1.16.0
 anytree==2.6.0

@@ -13,16 +13,16 @@ class MethodAxfr(object):
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
-        # Default timeout for DNS TCP/Socket
+        # Tiempo de espera por defecto para el módulo del socket
         socket.setdefaulttimeout = 0.50
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -32,11 +32,11 @@ class MethodAxfr(object):
             }
         )
 
-        # Get NS Servers
         self.context.out(
             self.context.strings['methods']['axfr']['getting-ns-servers']
         )
 
+        # Obtiene el nombre de dominio FQDN base
         fqdn = self.context.baseHostname
         if(self.context.baseHostname.count('.') > 1):
             fqdn = '.'.join(self.context.baseHostname.split('.')[:-1])
@@ -45,8 +45,8 @@ class MethodAxfr(object):
         try:
             ans = dns.resolver.query(fqdn, 'NS', tcp=True)
             nameServers = [a.to_text().strip('.') for a in ans]
-            nameServers = set(nameServers)    # Uniques
-            nameServers = sorted(nameServers) # Sorted
+            nameServers = set(nameServers)    # Valores únicos
+            nameServers = sorted(nameServers) # Valores ordenados
 
         except Exception as e:
             pass
@@ -60,7 +60,7 @@ class MethodAxfr(object):
             )
             return False
 
-        # Process each record
+        # Procesa cada registro
         for nameServer in nameServers:
             if(
                 (nameServer == self.context.baseHostname) or
@@ -68,18 +68,16 @@ class MethodAxfr(object):
             ):
                 continue
 
-            # New subdomain found (hidden/quiet mode)
+            # Nuevo subdominio encontrado
             self.context.addHostName(hostname=nameServer)
 
-        # Begin message
         self.context.out(
             self.context.strings['methods']['axfr']['making-axfr-queries']
         )
 
-        # Process each NS Server
+        # Revisa cada servidor NS
         for nameServer in nameServers:
 
-            # Print the progress
             self.context.out(
                 message=self.context.strings['methods']['axfr']['ns-progress'],
                 parseDict={
@@ -90,15 +88,15 @@ class MethodAxfr(object):
 
             axfr = None
             try:
-                # Make the query (timeout in seconds)
+                # Crea la consulta AXFR
                 axfr = dns.query.xfr(
                     where=nameServer,
                     zone=self.context.baseHostname,
-                    lifetime=5.0
+                    lifetime=5.0 # En segundos
                 )
 
             except Exception as e:
-                # Unable make the AXFR query
+                # Imposible ejecutar la consulta DNS
                 self.context.out(
                     self.context.strings['methods']['axfr']['ns-not-vulnerable']
                 )
@@ -106,24 +104,24 @@ class MethodAxfr(object):
 
             zone = None
             try:
-                # Get flushed data
+                # Intenta obtener los resultados de la consulta
                 zone = dns.zone.from_xfr(axfr)
             
             except Exception as e:
-                # Unable get the records
+                # Imposible obtener los registros
                 self.context.out(
                     self.context.strings['methods']['axfr']['ns-not-vulnerable']
                 )
                 continue
 
             if zone is None:
-                # Empty records
+                # Sin resultados
                 self.context.out(
                     self.context.strings['methods']['axfr']['ns-not-vulnerable']
                 )
                 continue
 
-            # Print ns vulnerable status
+            # El servidor actual NS es vulnerable
             self.context.out(
                     message=self.context.strings['methods']['axfr']['ns-vulnerable'],
                     parseDict={
@@ -135,23 +133,21 @@ class MethodAxfr(object):
                 self.context.strings['methods']['axfr']['getting-items']
             )
 
-            # Process each node
+            # Procesa cada resultado
             for name, node in zone.nodes.items():
                 rdatasets = node.rdatasets
 
-                # Process each record
                 for rdataset in rdatasets:
 
                     if(str(name) == '@'):
                         continue
 
-                    # Add the full hostname found
-                    # itemType = dns.rdatatype.to_text(rdataset.rdtype)
+                    # Agrega el subdominio encontrado a la pila global de resultados
                     self.context.addHostName(
                         hostname=str(name) + '.' + self.context.baseHostname,
                         messageFormat=self.context.strings['methods']['axfr']['item-found']
                     )
             
-            # Finish all
+            # Finaliza todo, ya no es necesario seguir buscando
             self.context.canContinue = False
             break

@@ -11,16 +11,16 @@ class MethodDnsQueries:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
-        # Default timeout for DNS TCP/Socket
+        # Tiempo de espera por defecto para el módulo del socket
         socket.setdefaulttimeout = 0.50
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -30,12 +30,13 @@ class MethodDnsQueries:
             }
         )
 
-        # Have subdomains?
+        # Variable que indica si hubieron subdominios encontrados o no
         found = False
 
-        # For each record type to found
+        # Procesa cada tipo de registro DNS
         for recordType in ['MX', 'TXT', 'SPF', 'NS']:
 
+            # Mensaje principal de la búsqueda del registro actual
             self.context.out(
                 message=self.context.strings['methods']['dns-queries']['title-query-type'],
                 parseDict={
@@ -43,61 +44,66 @@ class MethodDnsQueries:
                 }
             )
 
+            # ¿Hubo respuesta?
             answer = None
             try:
                 answer = dns.resolver.query(
                     self.context.baseHostname,
                     recordType,
-                    tcp=True
+                    tcp=True # Mejora el resultado, evita la pérdida de paquetes
                 )
 
             except Exception as e:
-                # Unable make the DNS query
+                # No fue posible realizar la consulta DNS
                 continue
 
             for rdata in answer:
 
-                # Hostnames found in current response (unique)
+                # Pila local de subdominios encontrados que evita al duplicidad
                 hostnames = []
 
-                # Plain record
+                # Registro en texto plano y en bruto
                 plainRecord = rdata.to_text().strip('"')
 
-                # Find all possible full hostname in the plain response
+                # Busca todos los posibles subdominios en la respuesta plana
                 matches = re.findall(
                     r'([a-zA-Z0-9\.\-\_\$]+?\.' + re.escape(self.context.baseHostname) + r')',
                     plainRecord
                 )
 
+                # ¿Hay resultados?
                 if(len(matches) == 0):
-                    # No matches found
                     continue
 
+                # Procesa cada subdominio encontrado
                 for item in matches:
+
                     if(
-                        # Is not same base hostname
-                        (item != self.context.baseHostname) and
+                        # Es un subdominio válido?
+                        (not item.endswith('.' + self.context.baseHostname)) or
 
-                        # Is a valid subdomain
-                        (item.endswith(self.context.baseHostname)) and
-
-                        # Unique record for this response
-                        (not item in hostnames)
+                        # ¿El subdominio existe en la pila local? (evita la 
+                        # duplicidad de resultados).
+                        (item in hostnames)
                     ):
-                        # Ok, have subdomains
-                        found = True
+                        continue
+                        
+                    # Está bien, hay subdominios
+                    found = True
 
-                        # Append to response stack for
-                        # unique report for each response.
-                        hostnames.append(item)
+                    # Agrega el subdominio encontrado a la pila local
+                    hostnames.append(item)
 
-                        # Add to main stack and print the result
-                        self.context.addHostName(
-                            hostname=item,
-                            messageFormat=self.context.strings['methods']['dns-queries']['item-found']
-                        )
+                    # Agrega el subdominio encontrado a la pila global de resultados
+                    self.context.addHostName(
+                        hostname=item,
+                        messageFormat=self.context.strings['methods']['dns-queries']['item-found']
+                    )
         
+        # ¿Hubo resultados finalmente?
         if(not found):
+
+            # No, no hubo resultados
             self.context.out(
                 self.context.strings['methods']['dns-queries']['no-items-found']
             )

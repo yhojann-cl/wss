@@ -9,22 +9,26 @@ class MethodGoogle:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
         
-        # Unique only
+        # Variable que permite entregar subdominios únicos (no duplicados)
         self.hostnames = []
 
-        # API Key id
+        # Llave API-KEY de Google
+        # Viene con una personal de regalo, si está saturada y google deniega
+        # las solicitudes deberás utilizar tu propia API-KEY.
         self.googleApiKey = 'AIzaSyD_NlD2Lz1OgewxdZasjCquLo6AWYdeJz0'
 
-        # Search id
+        # Identificador del buscador (*.cl, *.com, *.org, *.edu, *.net, *.py,
+        # *.gob, *.gov). Puedes utilizar tu propio Id de buscador de google con
+        # tus propias extensiones: https://cse.google.com/
         self.googleCx = '010763716184496466486:fscqb-8v6rs'
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -34,18 +38,20 @@ class MethodGoogle:
             }
         )
 
+        # ¿La llave de la API de Google existe?
         if(not self.googleApiKey.strip()):
             self.context.out(
                 self.context.strings['methods']['google']['no-api-key']
             )
             return
 
-        # Find on first page
+        # Busca en la primera página (de manera recursiva)
         self.paginate()
 
 
     def paginate(self, pageNumber=1):
 
+        # Contexto de la búsqueda de la página actual
         searchContext = {
             'max-pages'   : 15,
             'max-result'  : 10,
@@ -53,27 +59,30 @@ class MethodGoogle:
             'query'       : 'site:' + self.context.baseHostname
         }
         
+        # ¿Hay resultados del método actual?
         if(self.hostnames):
-            # Does not process known subdomains
+
+            # Excluye los subdominios ya conocidos
             searchContext['query'] += ' -site:' + ' -site:'.join(self.hostnames)
 
-        # Current start item number
+        # Número del resultado de inicio actual
         searchContext['start-index'] = (
             ((pageNumber - 1) * searchContext['max-result']) + 1
         )
 
-        # Header message for pagination
+        # Mensaje inicial de la paginación
         self.context.out(
             self.context.strings['methods']['google']['pagination']
         )
 
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
 
-        # json result
+        # El resultado es de tipo json
         result = None
 
         try:
+            # Navega
             result = crawler.httpRequest(
                 'https://www.googleapis.com/customsearch/v1?' +
                 'cx='     + crawler.urlencode(self.googleCx) +
@@ -83,23 +92,27 @@ class MethodGoogle:
                 '&filter=1&safe=off&num=' + str(searchContext['max-result'])
             )
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
+
+            # Imposible navegar
             self.context.out(
                 self.context.strings['methods']['google']['no-connect']
             )
+
             return
 
+        # Los estados 403 y 400 indican que no hay más resultados o que la API
+        # está saturada con solicitudes.
         if(result['status-code'] in [403, 400]):
-            # No more resulsts
             self.context.out(
                 self.context.strings['methods']['google']['no-more-results']
             )
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['google']['wrong-status-http'],
@@ -110,51 +123,62 @@ class MethodGoogle:
             return
 
         try:
-            # Convert the result into json object
+            # Convierte el resultado en un objeto de tipo json
             result = json.loads(result['response-content'])
 
         except Exception as e:
+
+            # Contenido corrupto, no es de tipo json procesable
             self.context.out(
                 self.context.strings['methods']['google']['corrupt-response']
             )
+
             return
 
+        # ¿Hay resultados procesables?
         if(
             (not 'items' in result) or
             (len(result['items']) == 0)
         ):
+
+            # No hay más resultados
             self.context.out(
                 self.context.strings['methods']['google']['no-more-results']
             )
+
             return
 
-        # Process each result
+        # Procesa cada resultado
         for item in result['items']:
             
-            # Is a valid subdomain?
+            # ¿El resultado es un subdominio inválido?
             if(not item['displayLink'].endswith('.' + self.context.baseHostname)):
                 continue
             
-            if(not item['displayLink'] in self.hostnames):
+            # Evita los resultados duplicados utilizando la pila local
+            if(item['displayLink'] in self.hostnames):
+                continue
 
-                # For unique resulsts
-                self.hostnames.append(item['displayLink'])
+            # Agrega el subdominio encontrado a la pila local
+            self.hostnames.append(item['displayLink'])
 
-                # Add full hostname
-                self.context.addHostName(
-                    hostname=item['displayLink'],
-                    messageFormat=self.context.strings['methods']['google']['item-found']
-                )
+            # Agrega el subdominio encontrado a la pila global de resultados
+            self.context.addHostName(
+                hostname=item['displayLink'],
+                messageFormat=self.context.strings['methods']['google']['item-found']
+            )
 
-                # Return to first page again
-                pageNumber = 0
+            # Retorna a la primera página nuevamente debido a que la búsqueda
+            # debe contener la exclusión del subdominio encontrado, por ejemplo:
+            # site: example.com -site:foo.example.com
+            pageNumber = 0
 
-        # Limit of pages
+        # Límite de busqueda de páginas
         if(pageNumber >= searchContext['max-pages']):
             self.context.out(
                 self.context.strings['methods']['google']['no-more-results']
             )
             return
 
-        # Next page
+        # Continua con la siguiente página
         self.paginate(pageNumber=pageNumber + 1)

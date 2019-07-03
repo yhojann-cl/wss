@@ -9,13 +9,13 @@ class MethodDnsDumpster(object):
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -25,14 +25,17 @@ class MethodDnsDumpster(object):
             }
         )
 
+        # Paso 1: BçObtiene el Token XSRF y mantiene el contexto de navegación
+        # para conservar la cookie de sesión.
         self.context.out(
             self.context.strings['methods']['dnsdumpster']['getting-token-xsrf']
         )
 
-        # Use the crawler bot
+        # Uso del crawler, por defecto guardará la cookie de sesión manteniendo
+        # el contexto del flujo de la navegación.
         crawler = WCrawler()
 
-        # json result
+        # El resultado es de tipo HTML
         result = None
 
         try:
@@ -46,7 +49,7 @@ class MethodDnsDumpster(object):
             )
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['dnsdumpster']['wrong-status-http'],
@@ -56,7 +59,7 @@ class MethodDnsDumpster(object):
             )
             return
 
-        # Find token XSRF
+        # Busca el token XSRF
         matches = re.search(
             br'name=\'csrfmiddlewaretoken\'\s+value=\'(.+?)\'',
             result['response-content'],
@@ -64,18 +67,23 @@ class MethodDnsDumpster(object):
         )
         
         if(not matches):
-            # No token found
+            # No se pudo encontrar el token
             self.context.out(
                 self.context.strings['methods']['robtex']['no-xsrf-token-found']
             )
             return
 
-        # El token XSRF
+        # Guarda el roken XSRF en la variable local para reutilizar la variable
+        # 'matches'.
         tokenXsrf = matches.group(1)
 
+        # Paso 2: Envía la solicitud HTTP con el subdominio a buscar
         self.context.out(
             self.context.strings['methods']['dnsdumpster']['getting-subdomains']
         )
+
+        # El resultado es de tipo HTML
+        result = None
 
         try:
             result = crawler.httpRequest(
@@ -93,7 +101,7 @@ class MethodDnsDumpster(object):
             )
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             print(result)
             self.context.out(
@@ -104,21 +112,23 @@ class MethodDnsDumpster(object):
             )
             return
 
+        # Busca todos los resultados
         matches = re.findall(
             br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')<',
             result['response-content']
         )
 
+        # ¿Hay resultados?
         if(len(matches) == 0):
             self.context.out(
                 self.context.strings['methods']['dnsdumpster']['empty']
             )
             return
 
-        # Process all matches
+        # Procesa todos los subdominios encontrados
         for item in matches:
 
-            # Add full hostname
+            # Agrega el subdominio encontrado a la pila global de resultados
             self.context.addHostName(
                 hostname=item.decode(),
                 messageFormat=self.context.strings['methods']['dnsdumpster']['item-found']

@@ -13,7 +13,7 @@ class FilterPorts(object):
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
         # 10.0.0.0\8
@@ -25,6 +25,7 @@ class FilterPorts(object):
         # 192.168.0.0\16
         self.classC = IPv4Network(('192.168.0.0', '255.255.0.0'))
 
+        # Contexto del nombre de dominio
         self.hostnameContext = {
             'check-ports'        : [ ],
             'ports-found'        : { },
@@ -35,7 +36,7 @@ class FilterPorts(object):
 
     def filterAll(self):
         
-        # Header message
+        # Cabecera del mensaje del filtro actual
         self.context.out(
             message=self.context.strings['filter-begin'],
             parseDict={
@@ -45,7 +46,7 @@ class FilterPorts(object):
             }
         )
 
-        # For each ip address
+        # Procesa cada dirección IP
         itemNumber = 0
         for ipAddress in self.context.results['ip-address']['items'].keys():
 
@@ -54,7 +55,7 @@ class FilterPorts(object):
             if(ipAddress == 'unknown'):
                 continue
 
-            # Main structure for current ip address
+            # Crea la estructura del objeto de la dirección IP y sus puertos
             self.context.results['ip-address']['items'][ipAddress]['items']['ports'] = {
                 'title' : self.context.strings['filters']['ports']['node-tree']['ports-title'],
                 'items' : self.findPorts(ipAddress, itemNumber)
@@ -72,7 +73,8 @@ class FilterPorts(object):
             }
         )
 
-        # Local range
+        # Omite los rangos locales
+        # TODO: Puede ser requerido para pentesting.
         if(IP(ipAddress).iptype() in ['PRIVATE', 'LOOPBACK']):
             self.context.out(
                 self.context.strings['filters']['ports']['skip']
@@ -82,40 +84,47 @@ class FilterPorts(object):
         # if(address in self.classA):
         #     pass
 
-        # Hostname context (for multithreading)
+        # Contexto del nombre de dominio (para múltiples hilos de proceso)
         self.hostnameContext['check-ports']        = list(reversed(range(1, 65535)))
         self.hostnameContext['ports-found']        = { }
         self.hostnameContext['threads-handlers']   = [ ]
         self.hostnameContext['current-ip-address'] = ipAddress
 
-        # 1024 Threads by default
+        # 1024 hilos por defecto
         for threadNumber in range(1, 1024):
 
-            # Thread handler
-            t = threading.Thread(target=self.threadCheck)
+            # Puntero del hilo de proceso
+            threadHandler = threading.Thread(target=self.threadCheck)
 
-            # Prevent show errors on finish the main thread
-            t.setDaemon(True)
+            # Previene la impresión de mensajes de error al final del hilo
+            # principal cuando se cancela el progreso con Conrol+C.
+            threadHandler.setDaemon(True)
 
-            # append thread to stack
-            self.hostnameContext['threads-handlers'].append(t)
+            # Agrega el puntero a la pila de punteros locales
+            self.hostnameContext['threads-handlers'].append(threadHandler)
 
-        # Run all threads
-        for t in self.hostnameContext['threads-handlers']:
-            t.start()
+        # Ejecuta todos los hilos de proceso
+        for threadHandler in self.hostnameContext['threads-handlers']:
+            threadHandler.start()
 
-        # Wait for threads
-        for t in self.hostnameContext['threads-handlers']:
-            if(t.is_alive()):
-                t.join()
+        # Espera a que todos los hilos finalicen
+        for threadHandler in self.hostnameContext['threads-handlers']:
 
-        # Clear progress without padding
+            # Hasta este punto de la ejecución cabe la posibilidad de que el
+            # hilo de proceso ya haya finalizado, si se une con join() producirá
+            # un error de continuidad haciendo que nunca pueda finalizar.
+            if(not threadHandler.is_alive()):
+                continue
+
+            threadHandler.join()
+
+        # Limpia el buffer del último estado del progreso de la búsqueda
         self.context.out(
             message=self.context.strings['filters']['ports']['progress-clear'],
             end=''
         )
 
-        # Sorted results by port number
+        # Ordena el resultado de los puertos encontrados y lo retorna
         return { k: v for k, v in sorted(self.hostnameContext['ports-found'].items()) }
 
 
@@ -124,10 +133,10 @@ class FilterPorts(object):
         while(True):
         
             if(len(self.hostnameContext['check-ports']) == 0):
-                # No more ports
+                # No hay mas puertos a buscar
                 break
 
-            # Get next port
+            # Obtiene el siguiente puerto a buscar
             port = int(self.hostnameContext['check-ports'].pop())
 
             self.context.out(
@@ -145,7 +154,7 @@ class FilterPorts(object):
 
             try:
                 socketHandler = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                socketHandler.settimeout(7) # In seconds
+                socketHandler.settimeout(7) # Tiempo máximo de espera en segundos
                 socketHandler.connect((
                     self.hostnameContext['current-ip-address'],
                     port
@@ -160,7 +169,7 @@ class FilterPorts(object):
 
             if(isOpen):
 
-                # Rewrite current progress using the result
+                # Reescribe el progreso actual utilizando el mensaje de resultados
                 self.context.out(
                     message=(
                         self.context.strings['filters']['ports']['progress-clear'] +
@@ -173,6 +182,7 @@ class FilterPorts(object):
                     end=''
                 )
 
-                # Append port to list of results
-                # As object: To easy process in other filters
+                # Agrega el puerto a la pila principal de resultados
+                # Como objeto: Para facilitar el acceso a todas sus propiedades
+                #              y extensión del diccionario en otros filtros.
                 self.hostnameContext['ports-found'][port] = None

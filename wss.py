@@ -10,7 +10,7 @@ from   datetime         import datetime
 from   anytree          import Node, RenderTree
 from   anytree.importer import DictImporter
 
-# Subdomains finders
+# Módulos buscadores de subdominios
 from modules.subdomains.axfr               import MethodAxfr
 from modules.subdomains.dnsqueries         import MethodDnsQueries
 from modules.subdomains.virustotal         import MethodVirusTotal
@@ -22,12 +22,12 @@ from modules.subdomains.bing               import MethodBing
 from modules.subdomains.dnsdumpster        import MethodDnsDumpster
 from modules.subdomains.dictionary         import MethodDictionary
 
-# Filters
+# Filtros
 from modules.filters.ports                 import FilterPorts
 from modules.filters.http                  import FilterHttpServices
 
 
-# Controller class
+# Clase del controlador principal
 class Controller(object):
 
     def __init__(self):
@@ -37,7 +37,7 @@ class Controller(object):
         with open('resources/strings/en.json', 'r') as fileHandler:
             self.strings = json.load(fileHandler)
 
-        # Python 3 is required
+        # Python 3 es requerido
         if sys.version_info < (3, 0):
             print(self.strings['errors']['bad-python-version'])
             exit(1)
@@ -49,11 +49,10 @@ class Controller(object):
             'release' : 'beta'
         }
 
-        # Main domain to find
+        # Nombre de dominio principal a procesar
         self.baseHostname = None
 
-        # Dictionary of results
-        # Format: 
+        # Estructura del diccionario de resultados:
         # {
         #     "ip-address": {
         #         "items": {
@@ -90,7 +89,9 @@ class Controller(object):
         #         "title": "3 hosts were found"
         #     }
         # }
-        # You can add a custom values into tree using same structure.
+        # Puedes modificar y agregar items al arbol de resultados, estos se
+        # mostrarán de manera automática siempre y cuando no rompa la estructura
+        # principal.
         self.results = {
             'ip-address': {
                 'title': self.parseString(
@@ -103,13 +104,13 @@ class Controller(object):
             }
         }
 
-        # Order of methods
+        # Pila de métodos en orden
         self.methods = [ ]
 
-        # Order of filters
+        # Pila de filtros en orden
         self.filters = [ ]
 
-        # Progress
+        # Estado actual del progreso en general
         self.progress = {
             'methods' : {
                 'current' : 0,
@@ -122,7 +123,7 @@ class Controller(object):
             'total-hostnames' : 0
         }
 
-        # The main header
+        # Cabecera principal del mensaje de la línea de comandos
         self.out(
             message=self.strings['header'],
             parseDict={
@@ -135,7 +136,7 @@ class Controller(object):
             }
         )
         
-        # Get arguments from CLI
+        # Obtiene todos los argumentos procesables desde la línea de comandos
         argparseHandler = argparse.ArgumentParser(
             add_help=False
         )
@@ -167,29 +168,25 @@ class Controller(object):
             nargs='?'
         )
 
-        # Parse all arguments
+        # Procesa todos los argumentos
         arguments, unknownArguments = argparseHandler.parse_known_args(
             sys.argv[1:]
         )
 
-        # Hostname is required
+        # El nombre de dominio principal es requerido, sino ¿qué buscaremos?
         if(not arguments.hostname):
             return self.help()
 
-        # Set the main hostname to find as context
+        # Establece el nombre de dominio como contexto global
         self.baseHostname = arguments.hostname
 
-        # Have methods?
+        # ¿Hay métodos?
         if(not arguments.methods):
-            # self.out(self.strings['errors']['empty-methods'])
-            # self.out('') # Spacing to bottom
-            # self.help()
-            # return
 
-            # Methods by default
+            # Métodos por defecto
             arguments.methods = '0123456789a'
 
-        # Process each method (each character)
+        # Procesa cada método (es cada caracter)
         for methodId in arguments.methods:
 
             if(methodId == '0'):
@@ -240,22 +237,25 @@ class Controller(object):
                         'method': methodId
                     }
                 )
-                self.out('') # Spacing to bottom
+                self.out('') # Espacio separador
                 self.help()
                 return
 
-        # Have metods?
+        # ¿Hay métodos después de haber procesado incluso los por defecto?
         if(len(self.methods) == 0):
+
+            # No hay métodos, probablemente se estableció el argumento de
+            # métodos sin valores, por ejemplo: -m ''
             self.out(self.strings['errors']['empty-methods'])
             return
 
-        # Have filters?
+        # ¿Hay filtros?
         if(
             (arguments.filters is not None) and
             (len(arguments.filters) > 0)
         ):
 
-            # Process each filter (each character)
+            # Procesa cada filtro (es cada catacrer)
             for filterId in arguments.filters:
 
                 if(filterId == '0'):
@@ -271,109 +271,140 @@ class Controller(object):
                             'filter': filterId
                         }
                     )
-                    self.out('') # Spacing to bottom
+                    self.out('') # Espacio separador
                     self.help()
                     return
 
         self.progress['methods']['total'] = len(self.methods)
         self.progress['filters']['total'] = len(self.filters)
 
-        # Call all methods
+        # Ejecuta todos los métodos en el mismo orden en que fueron establecidos
         self.processAllMethods()
 
-        # Have results?
+        # ¿Hay resultados?
         if(len(self.results.keys()) == 0):
+
+            # No hay resultados
             self.out(self.strings['result']['empty'])
             return
 
-        # Sorted results by ip address
+        # Ordena todo el diccionario de resultados por dirección IP
         self.results['ip-address']['items'] = (
             { k: v for k, v in sorted(self.results['ip-address']['items'].items()) }
         )
 
-        # Sort hostnames
+        # Ordena todos los nombres de dominio (subdominios) encontrados por cada
+        # dirección IP.
         for ipAddress in self.results['ip-address']['items'].keys():
             self.results['ip-address']['items'][ipAddress]['items']['hostnames']['items'] = (
                 { k: v for k, v in sorted(self.results['ip-address']['items'][ipAddress]['items']['hostnames']['items'].items()) }
             )
-        
-        # TODO: Unimplemented.
 
-        # Call all filters
+        # Ejecuta todos los filtros en el mismo orden en que fueron establecidos
         self.processAllFilters()
 
-        # Show the results
+        # Muestra todos los resultados
         self.showResulsts()
 
 
     def processAllMethods(self):
 
-        # Can continue to next method?
+        # ¿Hay métodos a procesar?
+        if(len(self.methods) == 0):
+
+            # No hay métodos a procesar
+            return
+
+        # Varable que define si es posible continuar con el siguiente método,
+        # por ejemplo si una consulta AXFR obtiene todos los subdominios
+        # existentes no será necesario continuar con el resto de los métodos.
         self.canContinue = True
 
-        # Start methods
+        # Procesa cada método
         for methodClass in self.methods:
 
-            # Increase the method count
+            # Incrementa el número del método actual
             self.progress['methods']['current'] += 1
 
-            # Find subdomains in the current method
+            # Busca subdominios en el método actual
             methodClass.find()
 
-            # Free memory and call the destructor
-            # For free local storage like as MethodVirusTotal.hostnames
+            # Libera la memoria destruyendo la clase, de esta manera también es
+            # ejecutado el destructor de manera inmediata para posibles
+            # ordenamientos o pos procesamientos.
+            # Recordar que existen métodos con pilas locales de subdominios
+            # encontrados para evitar mostrar resultados duplicados y estas
+            # pilas utilizan buena parte del espacio en la memoria RAM.
             methodClass = None
 
-            # Line spacing to bottom of method
-            self.out('')
+            self.out('') # Espacio separador
 
+            # ¿Puede continuar?
             if(not self.canContinue):
+
+                # No puede continuar
                 break
 
     
     def processAllFilters(self):
 
+        # ¿Hay filtros a procesar?
         if(len(self.filters) == 0):
-            # No filters found
+
+            # No hay filtros a procesar
             return
 
-        # Can continue to next filter?
+        # Varable que define si es posible continuar con el siguiente filtro
         self.canContinue = True
 
-        # Start filters
+        # Procesa cada filtro
         for filterClass in self.filters:
 
-            # Increase the method count
+            # Incrementa el número del filtro actual
             self.progress['filters']['current'] += 1
 
-            # Filter all results
+            # Filtra todos los resultados utilizando el filtro actual
             filterClass.filterAll()
 
-            # Free memory and call the destructor
+            # Libera la memoria destruyendo la clase, de esta manera también es
+            # ejecutado el destructor de manera inmediata para posibles
+            # ordenamientos o pos procesamientos.
             filterClass = None
 
-            # Line spacing to bottom of method
-            self.out('')
+            self.out('') # Espacio separador
 
+            # ¿Puede continuar?
             if(not self.canContinue):
+
+                # No puede continuar
                 break
 
 
     def showResulsts(self):
 
-        # Show the results
+        # Crea el formato de fecha para el archivo a guardar
         dt = datetime.utcnow().replace(tzinfo=pytz.utc).strftime('[%Y-%m-%d %H_%M_%S]')
         saveLogPath = 'subdomains_' + self.baseHostname + '_' + dt + '.log'
 
-        # Print the header message
+        # Mensaje de cabecera del resultado final
         self.out(self.strings['result']['result-all-title'])
 
-        # Make nodes
+        # Actualiza el título del mensaje de resultados
+        self.results['ip-address']['title'] = self.parseString(
+            message=self.strings['result']['node-tree']['root'],
+            parseDict={
+                'count': self.progress['total-hostnames']
+            }
+        )
+
+        # Crea el nodo raíz del arbol de resultados
         nodeRoot = self.makeNodes(self.results['ip-address'])
 
-        # Final tree as string
+        # Mensaje con el arbol de resultados que será reutilizado en el mensaje
+        # por consola y el archivo de resultados.
         message = []
 
+        # Crea el contenido del arbol de resultados
         for pre, fill, node in RenderTree(nodeRoot):
             message.append(
                 self.parseString(
@@ -384,11 +415,12 @@ class Controller(object):
                 )
             )
 
-        # Show tree
+        # Muestra el arbol de resultados
         self.out('\n'.join(message))
 
-        # Newline as separator
-        self.out('')
+        self.out('') # Espacio separador
+
+        # Mensaje de cabecera del guardado del archivo de resultados
         self.out(
             message=self.strings['log-file']['saving'],
             parseDict={
@@ -396,29 +428,31 @@ class Controller(object):
             }
         )
 
-        # Save the tree
+        # Guarda el arbol de resultados en el archivo
         fileHandler = open(saveLogPath, 'w') 
         fileHandler.write('\n'.join(message))
         fileHandler.close()
 
-        # Free the memory
+        # Libera la memoria del arbol de resultados
         message = None
 
-        # Show the bottom result
+        # Muestra final
         self.out(self.strings['result']['finish'])
 
 
     def makeNodes(self, data, parent=None):
 
         if(parent is None):
-            # Main root
+            # Nodo raíz
             root = Node(data['title'])
         else:
-            # Branch
+            # Rama del nodo
             root = Node(data['title'], parent=parent)
 
-        # No items
+        # ¿Hay items?
         if(len(data['items'].keys()) == 0):
+
+            # No hay más items
             return root
 
         for itemKey, itemValue in data['items'].items():
@@ -426,34 +460,42 @@ class Controller(object):
                 isinstance(itemValue, dict) and
                 ('title' in itemValue)
             ):
+                # tiene item 'title' por lo cual es una rama
                 self.makeNodes(itemValue, parent=root)
 
             else:
+                # No tiene nodo 'title' por lo cual es un nodo final
                 Node(str(itemKey), root)
 
+        # Retorna el nodo raíz
         return root
 
 
     def parseString(self, message, parseDict=None):
 
-        # Multiline?
+        # ¿Mensaje multilínea?
         if(isinstance(message, list)):
             message = '\n'.join(message)
 
-        # Multivalue?
+        # ¿Mensaje con múltiples valores a procesar?
         if(
             (parseDict) and
             isinstance(parseDict, dict)
         ):
+            # Procesa cada item del diccionario de valores
             for key, value in parseDict.items():
+
+                # Cada llave es representada con llaves foraneas
                 message = str(message).replace('{' + str(key) + '}', str(value))
 
+        # Retorna el mensaje final (puede ser de varios tipos pero debe retornar
+        # siempre un string a modo de representación).
         return str(message)
 
 
     def out(self, message, parseDict=None, end='\n'):
 
-        # Print the message
+        # Imprime el mensaje
         print(
             self.parseString(message, parseDict),
             end=end,
@@ -463,19 +505,29 @@ class Controller(object):
 
     def addHostName(self, hostname, messageFormat=None):
 
-        # Remove wilcards
+        # Elimina el comodin del subdominio
         if(hostname.startswith('*.')):
-            hostname = hostname[3:]
+            hostname = hostname[2:]
 
+        # Evita procesar el nombre de dominio principal (talves debido a un
+        # comodín como subdominio).
+        if(hostname == self.baseHostname):
+            return
+
+        # Obtiene la dirección IP del subdominio encontrado
         ipAddress = None
         try:
             ipAddress = str(socket.gethostbyname(hostname))
 
         except Exception as e:
+            # Valor por defecto cuando no existe
             ipAddress = 'unknown'
 
-        # Make the stack with new ip address
+        # ¿La dirección IP ya existía?, eso quiere decir que ya existe la
+        # estructura del diccionario.
         if(not ipAddress in self.results['ip-address']['items']):
+
+            # Crea la estructura del nuevo objeto de la nueva dirección IP encontrada
             self.results['ip-address']['items'][ipAddress] = {
                 'title' : (self.strings['result']['unknown-ip-address-key'] if ipAddress == 'unknown' else ipAddress),
                 'items' : {
@@ -486,28 +538,21 @@ class Controller(object):
                 }
             }
         
-        # Hostname already exist in results?
+        # ¿El subdominio existe en el diccionario de resultados de la dirección IP?
         if(not hostname in self.results['ip-address']['items'][ipAddress]['items']['hostnames']['items']):
 
-            # Add host to ip address stack (as empty object for easy process in filters)
+            # Agrega el subdominio al objeto de la dirección IP (para facilitar
+            # el acceso a sus datos desde otros módulos).
             self.results['ip-address']['items'][ipAddress]['items']['hostnames']['items'][hostname] = None
 
-            # Add to progress
+            # Incrementa el progreso de subdominios encontrados
             self.progress['total-hostnames'] += 1
 
-            # Upgrade results
-            self.results['ip-address']['title'] = self.parseString(
-                message=self.strings['result']['node-tree']['root'],
-                parseDict={
-                    'count': self.progress['total-hostnames']
-                }
-            )
-
-        # Quiet mode?
+        # ¿Modo silencioso? (sin salida en la línea de comandos)
         if(messageFormat is None):
             return
 
-        # Print the progress
+        # Imprime el mensaje del progreso actual del subdominio encontrado
         self.out(
             message=messageFormat,
             parseDict={
@@ -519,6 +564,7 @@ class Controller(object):
         
     def help(self):
 
+        # Imprime el mensaje de ayuda
         self.out(
             message=self.strings['usage'],
             parseDict={
@@ -532,5 +578,9 @@ if __name__ == '__main__':
         controllerCls = Controller()
 
     except (KeyboardInterrupt, SystemExit):
-        print('') # Clear current line
+
+        # Posiciona el puntero de la línea de comandos en una línea limpia
+        print('')
+
+        # Salida con estado normal
         exit(0)

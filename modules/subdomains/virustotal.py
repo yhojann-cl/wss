@@ -10,28 +10,32 @@ class MethodVirusTotal:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
-        # Unique only
+        # Variable que permite entregar subdominios únicos (no duplicados)
         self.hostnames = []
 
 
-    def find(self, nextUrl=None, pageId=1):
+    def find(self):
 
-        # First page?
-        if(nextUrl is None):
+        # Mensaje de la cabecera del método
+        self.context.out(
+            message=self.context.strings['method-begin'],
+            parseDict={
+                'current' : self.context.progress['methods']['current'],
+                'total'   : self.context.progress['methods']['total'],
+                'title'   : self.context.strings['methods']['virus-total']['title']
+            }
+        )
 
-            # Header message
-            self.context.out(
-                message=self.context.strings['method-begin'],
-                parseDict={
-                    'current' : self.context.progress['methods']['current'],
-                    'total'   : self.context.progress['methods']['total'],
-                    'title'   : self.context.strings['methods']['virus-total']['title']
-                }
-            )
+        # Busca desde la primera página de la api (recursivo)   
+        self.findInApi()
 
+
+    def findInApi(self, nextUrl=None, pageId=1):
+
+        # Mensaje de la paginación
         self.context.out(
             message=self.context.strings['methods']['virus-total']['paginating'],
             parseDict={
@@ -39,10 +43,10 @@ class MethodVirusTotal:
             }
         )
 
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
 
-        # json result
+        # El resultado es de tipo json
         result = None
 
         try:
@@ -53,16 +57,19 @@ class MethodVirusTotal:
             else:
                 result = crawler.httpRequest(nextUrl)
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
+
+            # Imposible navegar
             self.context.out(
                 self.context.strings['methods']['virus-total']['no-connect']
             )
+
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['virus-total']['wrong-status-http'],
@@ -73,41 +80,49 @@ class MethodVirusTotal:
             return
 
         try:
-            # Convert the result into json object
+            # Convierte el resultado en un objeto de tipo json
             result = json.loads(result['response-content'])
 
         except Exception as e:
+
+            # Contenido corrupto, no es de tipo json procesable
             self.context.out(
                 self.context.strings['methods']['virus-total']['corrupt-response']
             )
+
             return
 
+        # ¿Hay contenido de la respuesta HTTP?
         if(len(result['data']) == 0):
+
+            # No hay contenido, por lo cual tampoco hay más resultados
             self.context.out(self.context.strings['methods']['virus-total']['no-more'])
+
             return
 
-        # Process all subdomains found
+        # Procesa todos los subdominios encontrados en la página actual
         for item in result['data']:
 
-            # Unique results for this instance
+            # Evita los resultados duplicados utilizando la pila local
             if(str(item['id']) in self.hostnames):
                 continue
 
-            # Add to current stack for unique results
+            # Agrega el subdominio encontrado a la pila local
             self.hostnames.append(str(item['id']))
 
-            # Add full hostname
+            # Agrega el subdominio encontrado a la pila global de resultados
             self.context.addHostName(
                 hostname=str(item['id']),
                 messageFormat=self.context.strings['methods']['virus-total']['item-found']
             )
 
-        # Need paginate?
+        # ¿Necesita continuar paginando resultados?
         if(
             ('links' in result) and
             ('next' in result['links']) and
             (result['links'])
         ):
+            # Continua con la siguiente página
             self.find(
                 nextUrl=str(result['links']['next']),
                 pageId=(pageId + 1)

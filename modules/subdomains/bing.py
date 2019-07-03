@@ -9,16 +9,16 @@ class MethodBing:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
-        # Unique only
+        # Variable que permite entregar subdominios únicos (no duplicados)
         self.hostnames = []
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -28,12 +28,13 @@ class MethodBing:
             }
         )
 
-        # Find on first page
+        # Busca en la primera página
         self.paginate()
 
 
     def paginate(self, pageNumber=1):
 
+        # Contexto de la búsqueda de la página actual
         searchContext = {
             'max-pages'   : 15,
             'max-result'  : 10,
@@ -41,14 +42,16 @@ class MethodBing:
             'query'       : 'domain:' + self.context.baseHostname
         }
 
+        # ¿Hay resultados del método actual?
         if(self.hostnames):
-            # Does not process known subdomains
+            
+            # Excluye los subdominios ya conocidos
             searchContext['query'] += (
                 ' -domain:' +
                 ' -domain:'.join(self.hostnames)
             )
 
-        # Current start item number
+        # Número del resultado de inicio actual
         searchContext['start-index'] = (
             ((pageNumber - 1) * searchContext['max-result']) + 1
         )
@@ -58,10 +61,10 @@ class MethodBing:
             message=self.context.strings['methods']['bing']['pagination']
         )
 
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
 
-        # json result
+        # El resultado es de tipo json
         result = None
 
         try:
@@ -71,7 +74,7 @@ class MethodBing:
                 '&first=' + str(searchContext['start-index'])
             )
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
@@ -80,7 +83,7 @@ class MethodBing:
             )
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['bing']['wrong-status-http'],
@@ -90,7 +93,8 @@ class MethodBing:
             )
             return
 
-        # Example: <cite>https://foo<strong>domain.com</strong>
+        # Busca cada nombre de dominio
+        # Ejemplo de resultados: <cite>https://foo<strong>ejemplo.com</strong>
         matches = re.findall(
             br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')',
             result['response-content'].replace(
@@ -100,40 +104,45 @@ class MethodBing:
         )
 
         if(len(matches) == 0):
+            # No hay resultados
             self.context.out(
                 self.context.strings['methods']['bing']['no-more-results']
             )
             return
 
-        # Process all matches
+        # Procesa cada nombre de dominio encontrado
         for item in matches:
 
-            # Unique resulsts
+            # ¿El resultado es un subdominio inválido?
+            if(not item.decode().endswith('.' + self.context.baseHostname)):
+                continue
+
+            # Evita los resultados duplicados utilizando la pila local
             if(item.decode() in self.hostnames):
                 continue
 
-            # Add to unique stack
+            # Agrega el subdominio encontrado a la pila local
             self.hostnames.append(item.decode())
 
-            # Add full hostname
+            # Agrega el subdominio encontrado a la pila global de resultados
             self.context.addHostName(
                 hostname=item.decode(),
                 messageFormat=self.context.strings['methods']['bing']['item-found']
             )
 
-        # Can continue to next page?
+        # ¿Hay mas páginas donde buscar?
         if(not b'sw_next' in result['response-content']):
             self.context.out(
                 self.context.strings['methods']['bing']['no-more-results']
             )
             return
             
-        # Limit of pages
+        # Límite de busqueda de páginas
         if(pageNumber >= searchContext['max-pages']):
             self.context.out(
                 self.context.strings['methods']['bing']['no-more-results']
             )
             return
 
-        # Next page
+        # Continua con la siguiente página
         self.paginate(pageNumber=pageNumber + 1)

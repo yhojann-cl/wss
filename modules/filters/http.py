@@ -10,9 +10,10 @@ class FilterHttpServices(object):
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
+        # Contexto del nombre de dominio
         self.hostnameContext = {
             'check-ports'        : [ ],
             'threads-handlers'   : [ ],
@@ -20,13 +21,13 @@ class FilterHttpServices(object):
             'current-ip-address' : None
         }
 
-        # Known http ports
+        # Puertos http conocidos. Fuentes:
         # https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml
         # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/managing_confined_services/sect-managing_confined_services-configuration_examples-changing_port_numbers
         # https://wiki.zimbra.com/wiki/Ports
         # https://geekflare.com/default-port-numbers/
         # https://confluence.atlassian.com/kb/ports-used-by-atlassian-applications-960136309.html
-        self.defaultPortsToFind = list(set([ # set: Unique values
+        self.defaultPortsToFind = list(set([ # set(): Elimina las duplicidades
                 80,   # Selinux http port
                 443,  # Selinux http port
                 488,  # Selinux http port
@@ -150,7 +151,7 @@ class FilterHttpServices(object):
 
     def filterAll(self):
 
-        # Header message
+        # Cabecera del mensaje del filtro actual
         self.context.out(
             message=self.context.strings['filter-begin'],
             parseDict={
@@ -160,13 +161,13 @@ class FilterHttpServices(object):
             }
         )
 
-        # For each ip address
+        # Procesa cada dirección IP
         for ipAddress in self.context.results['ip-address']['items'].keys():
 
             if(ipAddress == 'unknown'):
                 continue
 
-            # For each hostname
+            # Procesa cada nombre de dominio de la dirección IP actual
             for hostname in self.context.results['ip-address']['items'][ipAddress]['items']['hostnames']['items'].keys():
 
                 self.findHttpServices(ipAddress, hostname)
@@ -174,8 +175,8 @@ class FilterHttpServices(object):
 
     def findHttpServices(self, ipAddress, hostname):
 
-        # Hostname context (for multithreading)
-        # Have ports scanned?
+        # Contexto del nombre de dominio (para hilos de proceso)
+        # ¿Hay puertos donde buscar?
         if('ports' in self.context.results['ip-address']['items'][ipAddress]['items'].keys()):
             self.hostnameContext['check-ports'] = list(
                 self.context.results['ip-address']['items'][ipAddress]['items']['ports']['items'].keys()
@@ -188,28 +189,35 @@ class FilterHttpServices(object):
         self.hostnameContext['current-hostname']   = hostname
         self.hostnameContext['current-ip-address'] = ipAddress
 
-        # 20 Threads by default
+        # 20 hilos de proceso por defecto
         for threadNumber in range(1, 20):
 
-            # Thread handler
-            t = threading.Thread(target=self.threadCheck)
+            # Puntero del hilo de proceso
+            threadHandler = threading.Thread(target=self.threadCheck)
 
-            # Prevent show errors on finish the main thread
-            t.setDaemon(True)
+            # Previene la impresión de mensajes de error al final del hilo
+            # principal cuando se cancela el progreso con Conrol+C.
+            threadHandler.setDaemon(True)
 
-            # append thread to stack
-            self.hostnameContext['threads-handlers'].append(t)
+            # Agrega el puntero a la pila de punteros locales
+            self.hostnameContext['threads-handlers'].append(threadHandler)
 
-        # Run all threads
-        for t in self.hostnameContext['threads-handlers']:
-            t.start()
+        # Ejecuta todos los hilos de proceso
+        for threadHandler in self.hostnameContext['threads-handlers']:
+            threadHandler.start()
 
-        # Wait for threads
-        for t in self.hostnameContext['threads-handlers']:
-            if(t.is_alive()):
-                t.join()
+        # Espera a que todos los hilos finalicen
+        for threadHandler in self.hostnameContext['threads-handlers']:
 
-        # Clear progress without padding
+            # Hasta este punto de la ejecución cabe la posibilidad de que el
+            # hilo de proceso ya haya finalizado, si se une con join() producirá
+            # un error de continuidad haciendo que nunca pueda finalizar.
+            if(not threadHandler.is_alive()):
+                continue
+
+            threadHandler.join()
+
+        # Limpia el buffer del último estado del progreso de la búsqueda
         self.context.out(
             message=self.context.strings['filters']['http']['progress-clear'],
             end=''
@@ -221,22 +229,22 @@ class FilterHttpServices(object):
         while(True):
 
             if(len(self.hostnameContext['check-ports']) == 0):
-                # No more ports
+                # No hay mas puertos donde buscar
                 break
 
-            # Get next port
+            # Obtiene el siguente puerto a buscar de la pila local
             port = int(self.hostnameContext['check-ports'].pop())
 
             for protocol in ['http', 'https']:
 
-                # Omit conflicts
+                # Omite conflictos
                 if(
                     ((protocol == 'http') and (port == 443)) or
                     ((protocol == 'https') and (port == 80))
                 ):
                     continue
 
-                # Compose the final URL
+                # Compone la dirección URL final
                 url = protocol + '://' + self.hostnameContext['current-hostname'] + '/'
                 if(
                     ((protocol == 'http')  and (port != 80)) or
@@ -255,7 +263,7 @@ class FilterHttpServices(object):
                     end=''
                 )
 
-                # Use the crawler bot
+                # Uso del crawler
                 crawler = WCrawler()
 
                 result = None
@@ -267,16 +275,15 @@ class FilterHttpServices(object):
                     pass
 
                 if(
-                    # Unable to connect or reset/refused connection
+                    # No fue posible conectar con el servidor
                     (result is None) or
 
-                    # Open port but is not a http service
+                    # Puerto abierto pero no es un servicio HTTP
                     (result['status-code'] == 0)
                 ):
-                    # Is not a HTTP service
                     continue
 
-                # Get the content of the title tag
+                # Obtiene el contenido de la etiqueta HTML <title>
                 matches = re.search(
                     br'<title>(.+?)<\/title>',
                     result['response-content'],
@@ -300,8 +307,10 @@ class FilterHttpServices(object):
                     end=''
                 )
 
-                # Make results structure
+                # ¿Existe una estructura definida para el nombre de dominio?
                 if(self.context.results['ip-address']['items'][self.hostnameContext['current-ip-address']]['items']['hostnames']['items'][self.hostnameContext['current-hostname']] is None):
+
+                    # Crea la estructura de resultados
                     self.context.results['ip-address']['items'][self.hostnameContext['current-ip-address']]['items']['hostnames']['items'][self.hostnameContext['current-hostname']] = {
                         'title': self.hostnameContext['current-hostname'],
                         'items': {
@@ -312,14 +321,16 @@ class FilterHttpServices(object):
                         }
                     }
 
-                # Make results structure from other filters
+                # ¿La estructura de servicios HTTP existe para el nombre de dominio actual?
                 if(not 'http-services' in self.context.results['ip-address']['items'][self.hostnameContext['current-ip-address']]['items']['hostnames']['items'][self.hostnameContext['current-hostname']]['items'].keys()):
+
+                    # Añade la estructura de resultados a una ya existente
                     self.context.results['ip-address']['items'][self.hostnameContext['current-ip-address']]['items']['hostnames']['items'][self.hostnameContext['current-hostname']]['items']['http-services'] = {
                         'title' : self.context.strings['filters']['http']['node-tree']['http-title'],
                         'items' : { }
                     }
                 
-                # Final line string
+                # Mensaje final con el resultado
                 nodeLine = self.context.parseString(
                     message=self.context.strings['filters']['http']['node-tree']['http-service'],
                     parseDict={
@@ -328,6 +339,6 @@ class FilterHttpServices(object):
                     }
                 )
 
-                # Append to result
+                # Agrega a lapila de resultados si no existe (como objeto)
                 if(not nodeLine in self.context.results['ip-address']['items'][self.hostnameContext['current-ip-address']]['items']['hostnames']['items'][self.hostnameContext['current-hostname']]['items']['http-services']['items'].keys()):
                     self.context.results['ip-address']['items'][self.hostnameContext['current-ip-address']]['items']['hostnames']['items'][self.hostnameContext['current-hostname']]['items']['http-services']['items'][nodeLine] = None

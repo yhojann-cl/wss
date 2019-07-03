@@ -19,28 +19,38 @@ class MethodDictionary(object):
 
     def __init__(self, context, dictionaryPath, title):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
-        # Header title
+        # Mensaje de cabecera personalizado
         self.title = title
 
-        # The fork context
+        # Contexto del método actual
         self.dictionary = {
             'threads'             : [],
             'max-threads'         : 100,
             'file-handler'        : None,
             'file-path'           : dictionaryPath,
             'nameservers'         : [
-                # The slower (less threads), the more effective.
+                # Mientra mas lento (menos hilos de proceso), el reultado es más
+                # efectivo.
                 
-                # Without custom ns (empty array) is more fast, 
-                # 500 to 1000 threads max, but they can prohibit easier access.
+                # Sin servidores NS personalizados la búsqueda es mas rápida
+                # pero puede tener más errores debido a la no fiabilidad del
+                # servicio del proveedor de Internet. Use de 500 a 1000 threads.
 
-                # APNIC  NS (200 threads max but errors occur more frequently)
+                # APNIC NS, Cloudflare.
+                # Use 200 hilos de proceso como máximo. Estos servidores
+                # contienen muchos errores y con mucha frecuencia, arroja muchos
+                # falsos positivos. No es recomendado.
                 # '1.1.1.1', '1.0.0.1',
 
-                # Google NS (100 threads max but is more stable)
+                # Google NS.
+                # Use 100 hilos de proceso como máximo, en caso contrario el
+                # servidor podría arrojar errores debido a que internamente crea
+                # una cola de respuesta la cual puede ser muy inestable y
+                # provocar desconexiones por tiempo de espera.
+                # Con 100 hilos de proceso es muy estable, sin falsos positivos.
                 '8.8.8.8', '8.8.4.4'
             ],
             'n-subdomains-in-file': 0,
@@ -50,13 +60,13 @@ class MethodDictionary(object):
             'hostname-base'       : None
         }
 
-        # Default timeout for DNS TCP/Socket
+        # Tiempo de espera por defecto para el módulo del socket
         socket.setdefaulttimeout = 0.50
         
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -66,9 +76,12 @@ class MethodDictionary(object):
             }
         )
 
-        # Main hostname base
+        # Nombre de dominio principal como contexto global para todos los hilos
+        # de proceso.
         self.dictionary['hostname-base'] = self.context.baseHostname
 
+        # Detecta si el dominio contiene comodines que impiden la diferenciación
+        # de resultados con subdominios inexistentes.
         if(self.haveWildcard()):
             self.context.out(
                 self.context.strings['methods']['dictionary']['wildcard-detected']
@@ -79,19 +92,21 @@ class MethodDictionary(object):
             self.context.strings['methods']['dictionary']['counting-items']
         )
 
-        # Count lines
-        # Use different file handler
-        f = open(self.dictionary['file-path'], 'r')
+        # Cuenta la cantidad de subdominios totales en el archivo (líneas)
+        fileHandler = open(self.dictionary['file-path'], 'r')
         while True:
-            b = f.read(65536)
+            # Por bloques grandes pero no exagerados
+            b = fileHandler.read(65536)
             if not b:
-                f.close()
+                fileHandler.close()
                 break
             self.dictionary['n-subdomains-in-file'] += b.count('\n')
 
+        # Agrega la línea del primer item
         if(self.dictionary['n-subdomains-in-file'] > 0):
             self.dictionary['n-subdomains-in-file'] += 1
 
+        # Mensaje de cabecera con el total de subdominios a buscar
         self.context.out(
             self.context.strings['methods']['dictionary']['total-items'],
             parseDict={
@@ -99,47 +114,52 @@ class MethodDictionary(object):
             }
         )
 
-        # File handler of the dictionary
+        # Puntero del archivo de lectura del diccionario
         self.dictionary['file-handler'] = open(self.dictionary['file-path'], 'r')
 
         self.context.out(
             self.context.strings['methods']['dictionary']['loading-threads']
         )
 
-        # Make space for the buffer progress
+        # Crea un espacio para el buffer de salida del progreso
         # https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
         self.context.out(
             self.context.strings['methods']['dictionary']['progress-pre']
         )
 
-        # Make threads
+        # Crea los hilos de proceso
         while True:
 
-            # current_thread += 1
+            # Puntero del hilo de proceso
+            threadHandler = threading.Thread(target=self.threadCheck)
 
-            # Thread handler
-            t = threading.Thread(target=self.threadCheck)
+            # Previene la impresión de mensajes de error al final del hilo
+            # principal cuando se cancela el progreso con Conrol+C.
+            threadHandler.setDaemon(True)
 
-            # Prevent show errors on finish the main thread
-            t.setDaemon(True)
+            # Agrega el puntero a la pila de punteros locales
+            self.dictionary['threads'].append(threadHandler)
 
-            # append thread to stack
-            self.dictionary['threads'].append(t)
-
-            # Thread limit?
+            # Limitador de hilos de proceso
             if(len(self.dictionary['threads']) >= self.dictionary['max-threads']):
                 break
 
-        # Run all threads
-        for t in self.dictionary['threads']:
-            t.start()
+        # Ejecuta todos los hilos de proceso
+        for threadHandler in self.dictionary['threads']:
+            threadHandler.start()
 
-        # Wait for threads
-        for t in self.dictionary['threads']:
-            if(t.is_alive()):
-                t.join()
+        # Espera a que todos los hilos finalicen
+        for threadHandler in self.dictionary['threads']:
 
-        # Clear space of the buffer rogress
+            # Hasta este punto de la ejecución cabe la posibilidad de que el
+            # hilo de proceso ya haya finalizado, si se une con join() producirá
+            # un error de continuidad haciendo que nunca pueda finalizar.
+            if(not threadHandler.is_alive()):
+                continue
+
+            threadHandler.join()
+
+        # Limpia el buffer del último estado del progreso de la búsqueda
         self.context.out(
             self.context.strings['methods']['dictionary']['progress-clear']
         )
@@ -147,7 +167,9 @@ class MethodDictionary(object):
 
     def haveWildcard(self):
 
-        # Validate a wildcard as subdomain
+        # Crea un subdominio ficticio a modo de hash MD5 para detectar si el
+        # dominio principal tiene un comodín como subdominio.
+
         m = hashlib.md5()
         m.update((str(random()) + 'fake').encode('utf-8', 'ignore'))
         fakeSubdomain = '__' + m.hexdigest() + '__.' + self.dictionary['hostname-base']
@@ -156,14 +178,11 @@ class MethodDictionary(object):
 
         try:
             resolv = dns.resolver.Resolver()
+
             if(self.dictionary['nameservers']):
-                # Custom nameservers
                 resolv.nameservers = self.dictionary['nameservers']
-            useWilcard = resolv.query(
-                fakeSubdomain,
-                'A',
-                tcp=True
-            )
+
+            useWilcard = resolv.query(fakeSubdomain, 'A', tcp=True)
             
         except Exception as e:
             pass
@@ -173,32 +192,36 @@ class MethodDictionary(object):
 
     def threadCheck(self):
 
+        # Hilo de proceso que busca y valida subdominios
         while(True):
 
             subdomain = None
 
             try:
-                # Try read the next line from dictionary
+                # Intenta obtener la siguiente línea del diccionario
                 subdomain = self.dictionary['file-handler'].readline().strip().lower()
 
-                # Line count
+                # Aumenta el número de la línea actual (para imprimir el
+                # progreso).
                 self.dictionary['current-line'] += 1
 
             except Exception as e:
                 pass
 
             if(not subdomain):
-                # No more lines
+                # No hay mas líneas.
                 break
 
-            # The full hostname
+            # Compone el nombre de dominio completo a buscar
             hostname = subdomain.strip() + '.' + self.dictionary['hostname-base']
+
+            # Cantidad de reintentos actuales
             retries  = 0
 
-            # Retries
+            # Iteración de intentos
             while(True):
 
-                # Info progress
+                # Informa el progreso actual
                 self.context.out(
                     message=(
                         self.context.strings['methods']['dictionary']['progress-clear'] +
@@ -215,82 +238,79 @@ class MethodDictionary(object):
                     end=''
                 )
 
-                # Check if have a ip address
+                # Si el nombre de dominio tiene una dirección IP válida es 
+                # porque existe.
+
                 nsAnswer = None
                 try:
 
                     resolv = dns.resolver.Resolver()
+
                     if(self.dictionary['nameservers']):
-                        # Custom nameservers
                         resolv.nameservers = self.dictionary['nameservers']
 
-                    nsAnswer = resolv.query(
+                    # Crea una consulta DNS al registro A
+                    nsAnswer = resolv.query(hostname, 'A', tcp=True)
 
-                        # Full hostname to find
-                        hostname,
+                    if(not nsAnswer):
+                        # No hay una dirección IP asociada al nombre de dominio
+                        break
 
-                        # Record type
-                        'A',
+                    # Busca en cada respuesta del registro A
+                    for rdata in nsAnswer:
 
-                        # TCP for better results
-                        tcp=True
-                    )
+                        # Intenta obtener la dirección IP de la respuesta
+                        ip = rdata.to_text().strip('"')
+                        if(not ip):
+                            # No hay una dirección IP asociada a la respuesta
+                            continue
 
-                    if(nsAnswer):
+                        # Agrega el subdominio encontrado a la pila global de
+                        # resultados.
+                        self.context.addHostName(
+                            hostname=hostname,
+                            messageFormat=(
 
-                        # For each response data of record
-                        for rdata in nsAnswer:
+                                # Clear space of the buffer rogress
+                                self.context.strings['methods']['dictionary']['progress-clear'] +
 
-                            # Get the ip address from current response record
-                            ip = rdata.to_text().strip('"')
+                                # Show the subdomain found
+                                self.context.strings['methods']['dictionary']['item-found'] +
 
-                            # The record have a valid ip address?
-                            # ip = str(socket.gethostbyname(hostname)) Fail ns server
-                            if(ip):
+                                # Make space for the buffer progress
+                                self.context.strings['methods']['dictionary']['progress-pre']
+                            )
+                        )
 
-                                # Add full hostname
-                                self.context.addHostName(
-                                    hostname=hostname,
-                                    messageFormat=(
+                        # Detiene la búsqueda en las respuestas de la consulta
+                        # DNS.
+                        break
 
-                                        # Clear space of the buffer rogress
-                                        self.context.strings['methods']['dictionary']['progress-clear'] +
-
-                                        # Show the subdomain found
-                                        self.context.strings['methods']['dictionary']['item-found'] +
-
-                                        # Make space for the buffer progress
-                                        self.context.strings['methods']['dictionary']['progress-pre']
-                                    )
-                                )
-
-                                # Break for
-                                break
-
-                    # Break while
+                    # Detiene el while, no hay reintentos, todo está bien
                     break
 
                 except dns.resolver.NXDOMAIN:
-                    # No such domain
+                    # No se encuentra el nombre de dominio
                     break
 
                 except dns.resolver.Timeout:
-                    # Retry
+                    # Hay que reintentar otra vez
 
-                    # Update retries count for this hostname
+                    # Actualiza el contador de reintentos para el nombre de 
+                    # dominio actual.
                     retries += 1
 
-                    # Update global retries counts
+                    # Actualiza el contador de reintentos globales
                     self.dictionary['retries'] += 1
 
-                    # Limit of retries
+                    # ¿Se ha llegado al límite de reintentos?
                     if(retries > self.dictionary['max-retries']):
                         break
 
                 except dns.exception.DNSException:
-                    # Unknown exception
+                    # Error desconocido
                     break
 
                 except Exception as e:
-                    # Unknown exception
+                    # Error desconocido
                     break

@@ -18,12 +18,12 @@ class WCrawler(object):
 
         self.cookies = {}
         self.lastUrl = None
-        self.defaultTimeout = 10 # in seconds
+        self.defaultTimeout = 10 # En segundos
 
 
     def clearContext(self):
 
-        # Make a new instance
+        # Crea una nueva instancia
         self.cookies = {}
         self.lastUrl = None
 
@@ -34,7 +34,7 @@ class WCrawler(object):
         customHeaders=None,
         postData=None
     ):
-        # to bytes array
+        # Convierte la dirección URL a bytes
         if(not isinstance(url, bytes)):
             url = str(url).encode('utf-8', 'ignore')
 
@@ -46,11 +46,7 @@ class WCrawler(object):
             if(isinstance(postData, str)):
                 postData = postData.encode('utf-8', 'ignore')
 
-#        if(customHeaders):
-#            # Join custom headers
-#            headers.update(customHeaders)
-
-        #Formatea la dirección URL
+        # Formatea la dirección URL
         urlParsed = parse.urlparse(url)
         urlData = {
             'original' : url,
@@ -68,7 +64,7 @@ class WCrawler(object):
         if(not urlData['port']):
             urlData['port'] = 443 if (urlData['scheme'] == b'https') else 80
 
-        # Strip the custom port from the hostname
+        # Elimina el puerto personalizado del nombre de dominio
         if(b':' in urlData['host']):
             urlData['host'] = urlData['host'].split(b':')[0]
             
@@ -117,7 +113,7 @@ class WCrawler(object):
         else:
             socketWraped = socketHandler
 
-        # Connect to server
+        # Conecta con el servidor
         socketWraped.connect((urlData['host'].decode(), int(urlData['port'])))
 
         socketWraped.send(packet)
@@ -131,7 +127,7 @@ class WCrawler(object):
         socketWraped.shutdown(1)
         socketWraped.close()
 
-        # Save the cookies
+        # Guarda las cookies
         self.parseCookiesByHttpResponse(bytesRresponse)
 
         statusCode = 0
@@ -153,7 +149,7 @@ class WCrawler(object):
                 tmp[key] = value
             headers = tmp
 
-        # TODO: Support?
+        # TODO: Agregar soporte?
         # Transfer-Encoding: chunked  [OK]
         # Transfer-Encoding: compress
         # Transfer-Encoding: deflate
@@ -162,18 +158,18 @@ class WCrawler(object):
 
         if(b'Transfer-Encoding' in headers):
         
-            # Chunked response body?
+            # ¿Cuerpo de respuesta fragmentado?
             # https://tools.ietf.org/rfc/rfc7230.txt
             if(headers[b'Transfer-Encoding'] == b'chunked'):
 
-                # Length in hex, convert to int base 16
+                # Longitud de bytes en hexadecimal (int convertido en base16)
                 bytesLength = b''
                 byteLength  = 0
                 bytesBody   = b''
 
                 while(True):
 
-                    # Find next bytes length
+                    # Busca la siguiente longitud del fragmento
                     if(body[:1] != b'\n'):
                         if(body[:1] != b'\r'):
                             bytesLength += body[:1]
@@ -181,29 +177,30 @@ class WCrawler(object):
 
                     else:
 
-                        # End of bytes?
+                        # ¿Finalización de fragmentos?
                         if(bytesLength == b'0'):
                             break
 
-                        # Strip \n
+                        # Elimina el salto de línea \n
                         body = body[1:]
                         
-                        # Add to real body
+                        # Agrega el cuerpo real
                         bytesBody += body[:int(bytesLength, 16)]
 
-                        # Pop bytes (less memory usage)
+                        # Obtiene y elimina de la pila la cantidad de bytes del
+                        # cuerpo (ahorro de memoria RAM).
                         body = body[int(bytesLength, 16) + 2:] # 2:\r\n
 
-                        # Reset length
+                        # Reinicia la longitud
                         bytesLength = b''
 
-                # Transfer value
+                # Transfiere el valor a la variable final
                 body = bytesBody
 
-                # Free memory
+                # Libera la memoria por duplicidad del cuerpo
                 bytesBody = None
 
-        # Return the result
+        # Retorna el resultado
         return {
             'status-code'      : statusCode,
             'response-content' : body,

@@ -9,13 +9,13 @@ class MethodRobtex:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -25,11 +25,11 @@ class MethodRobtex:
             }
         )
 
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
         crawler.defaultTimeout = 30
 
-        # html result
+        # Resultado de tipo HTML
         result = None
 
         try:
@@ -37,16 +37,19 @@ class MethodRobtex:
                 url='https://www.robtex.com/dns-lookup/' + crawler.urlencode(self.context.baseHostname)
             )
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
+
+            # Imposible navegar
             self.context.out(
                 self.context.strings['methods']['robtex']['no-connect']
             )
+
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['robtex']['wrong-status-http'],
@@ -56,29 +59,30 @@ class MethodRobtex:
             )
             return
 
-        # Remove strong tags
-        # foo.<b>domain.com</b>
+        # Elimina las etiquetas de negritas del resultado: foo.<b>domain.com</b>
         result['response-content'] = result['response-content'].replace(
             b'<b>', b''
         ).replace(
             b'</b>', b''
         )
 
+        # Busca todos los posibles subdominios
         matches = re.findall(
             br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')<',
             result['response-content']
         )
 
+        # ¿Hay resultados?
         if(len(matches) == 0):
             self.context.out(
                 self.context.strings['methods']['robtex']['empty']
             )
             return
 
-        # Process all matches
+        # Procesa todos los resultados
         for item in matches:
 
-            # Add full hostname
+            # Agrega el subdominio encontrado a la pila global de resultados
             self.context.addHostName(
                 hostname=item.decode(),
                 messageFormat=self.context.strings['methods']['robtex']['item-found']

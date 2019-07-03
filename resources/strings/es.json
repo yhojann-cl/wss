@@ -9,12 +9,12 @@
     "usage": [
         "Uso: {scriptname} [opciones]",
         "",
-        "Resultado: Un arbol de nombres de host (subdominios) encontrados agrupados por",
-        "dirección IP.",
+        "Resultado: Un arbol de nombres de dominio (subdominios) encontrados",
+        "agrupados por dirección IP.",
         "",
         "Opciones:",
         "  -h, --help     Muestra el mensaje de ayuda.",
-        "      --host     El nombre de host a buscar.",
+        "      --host     El nombre de dominio a buscar.",
         "  -m, --methods  Listado de métodos.",
         "                 Métodos disponibles:",
         "                   0: Consulta DNS/AXFR.",
@@ -67,7 +67,7 @@
     },
     "errors": {
         "bad-python-version" : "Disculpa, Python 3.x, es requerido.",
-        "empty-hostname"     : "Necesita indicar un nombre de host.",
+        "empty-hostname"     : "Necesita indicar un nombre de dominio.",
         "empty-methods"      : "Necesita indicar por lo menos un método de búsqueda.",
         "unknown-method"     : "El método '{method}' no existe.",
         "unknown-filter"     : "El filtro '{filter}' no existe."

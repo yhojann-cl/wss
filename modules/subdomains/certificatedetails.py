@@ -10,16 +10,16 @@ class MethodCertificateDetails:
 
     def __init__(self, context):
 
-        # The main context
+        # El contexto principal
         self.context = context
         
-        # Unique only
+        # Variable que permite entregar subdominios únicos (no duplicados)
         self.hostnames = []
 
 
     def find(self):
 
-        # Header message
+        # Mensaje de la cabecera del método
         self.context.out(
             message=self.context.strings['method-begin'],
             parseDict={
@@ -29,10 +29,10 @@ class MethodCertificateDetails:
             }
         )
 
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
 
-        # json result
+        # El resultado es de tipo json
         result = None
 
         try:
@@ -40,7 +40,7 @@ class MethodCertificateDetails:
                 url='https://certificatedetails.com/api/list/' + crawler.urlencode(self.context.baseHostname)
             )
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
@@ -49,7 +49,7 @@ class MethodCertificateDetails:
             )
             return
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             self.context.out(
                 message=self.context.strings['methods']['certificate-details']['wrong-status-http'],
@@ -60,7 +60,7 @@ class MethodCertificateDetails:
             return
 
         try:
-            # Convert the result into json object
+            # Convierte el resultado en un objeto de tipo json
             result = json.loads(result['response-content'])
 
         except Exception as e:
@@ -78,41 +78,37 @@ class MethodCertificateDetails:
             )
             return
 
-        # Process each hostname
+        # Procesa cada nombre de dominio encontrado
         for item in result:
 
-            # Drop root wildcards
-            if(item['CommonName'] == ('*.' + self.context.baseHostname)):
-                continue
-
-            # Valid subdomain?
+            # ¿Es un subdominio válido?
             if(not item['CommonName'].endswith('.' + self.context.baseHostname)):
                 continue
 
-            if(item['CommonName'].startswith('*.')):
-                item['CommonName'] = item['CommonName'][2:]
+            # Evita los resultados duplicados utilizando la pila local
+            if(item['CommonName'] in self.hostnames):
+                continue
 
-            if(not item['CommonName'] in self.hostnames):
+            # Agrega el subdominio encontrado a la pila local
+            self.hostnames.append(item['CommonName'])
 
-                # For unique results
-                self.hostnames.append(item['CommonName'])
+            # Agrega el subdominio encontrado a la pila global de resultados
+            self.context.addHostName(
+                hostname=item['CommonName'],
+                messageFormat=self.context.strings['methods']['crt-sh']['item-found']
+            )
 
-                # Add full hostname
-                self.context.addHostName(
-                    hostname=item['CommonName'],
-                    messageFormat=self.context.strings['methods']['crt-sh']['item-found']
-                )
-
-        # Header message to process all links
+        # Mensaje de cabecera del comienzo de la obtención de todos los enlaces
         self.context.out(
             self.context.strings['methods']['certificate-details']['find-links']
         )
 
-        # Current link id
+        # Identificador actual del enlace
         linkId = 0
 
-        # Process each link
-        # Caution: Same hostname contain one o more certificates
+        # Procesa cada enlace
+        # Precaución: Un mismo nombre de dominio repetido puede contener uno o
+        #             más certificados diferentes.
         for item in result:
 
             linkId += 1
@@ -126,7 +122,7 @@ class MethodCertificateDetails:
 
     def findInLink(self, url, linkId, totalLinks):
 
-        # Header message of link
+        # Mensaje de cabereca de inicio de obtención del enlace
         self.context.out(
             message=self.context.strings['methods']['certificate-details']['find-link'],
             parseDict={
@@ -136,16 +132,16 @@ class MethodCertificateDetails:
             end=''
         )
         
-        # Use the crawler bot
+        # Uso del crawler
         crawler = WCrawler()
 
-        # json result
+        # El resultado es de tipo HTML
         result = None
 
         try:
             result = crawler.httpRequest(url=url)
 
-            # Free memory (no navigation context)
+            # Libera la memoria (no es necesario un contexto de navegación)
             crawler.clearContext()
 
         except Exception as e:
@@ -160,34 +156,36 @@ class MethodCertificateDetails:
             end=''
         )
 
-        # The http response is success?
+        # ¿La respuesta HTTP es OK?
         if(result['status-code'] != 200):
             # Nothing
             return
 
+        # Busca todos los posibles subdominios
         matches = re.findall(
             br'>([\w\.\-\_\$]+?\.' + re.escape(self.context.baseHostname).encode() + br')<',
             result['response-content']
         )
 
+        # ¿Hay resultados?
         if(len(matches) == 0):
-            # Nothing
             return
 
-        # Process all matches
+        # Procesa cada nombre de dominio
         for item in matches:
 
             if(
+                # Evita los resultados duplicados utilizando la pila local
                 (not item.decode() in self.hostnames) and
 
-                # Valid subdomain?
+                # ¿Es un subdominio válido?
                 (item.decode().endswith('.' + self.context.baseHostname))
             ):
             
-                # For unique results
+                # Agrega el subdominio encontrado a la pila local
                 self.hostnames.append(item.decode())
 
-                # Add full hostname
+                # Agrega el subdominio encontrado a la pila global de resultados
                 self.context.addHostName(
                     hostname=item.decode(),
                     messageFormat=self.context.strings['methods']['certificate-details']['item-found']
