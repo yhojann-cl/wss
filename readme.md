@@ -122,7 +122,7 @@ cambiar el lenguaje basta con editar el archivo `wss.py`, buscar:
     with open('resources/strings/en.json', 'r') as fileHandler:
 
 Y reemplazar por el archivo de la traducción deseada. También puedes crear tus
-propios archivos sde traducciones.
+propios archivos de traducciones.
 
 
 ## Ventajas

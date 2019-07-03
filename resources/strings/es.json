@@ -83,7 +83,7 @@
             "progress"       : "        Escaneando puerto: {port} ...",
             "progress-wait"  : "        Esperando puertos restantes ...",
             "node-tree"      : {
-                "ports-title"  : "Puertos",
+                "ports-title"  : "Puertos"
             }
         },
         "http": {

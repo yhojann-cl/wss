@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os.path
 import json
 import argparse
 import pytz
+import locale
 import socket
 from   datetime         import datetime
 from   anytree          import Node, RenderTree
@@ -32,9 +34,17 @@ class Controller(object):
 
     def __init__(self):
 
-        # Current language file (change this for other languages)
-        # Try load json file
-        with open('resources/strings/en.json', 'r') as fileHandler:
+        # Obtiene el lenguaje actual del Sistema Operativo
+        currentLocale = locale.getdefaultlocale()[0].split('_')[0].lower()
+
+        # Obtiene el archivo de textos correspondiente al lenguaje actual si 
+        # existe.
+        langFilePath = 'resources/strings/' + str(currentLocale) + '.json'
+        if(not os.path.isfile(langFilePath)):
+            langFilePath = 'resources/strings/en.json'
+
+        # Carga el archivo de textos
+        with open(langFilePath, 'r') as fileHandler:
             self.strings = json.load(fileHandler)
 
         # Python 3 es requerido
