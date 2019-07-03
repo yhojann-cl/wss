@@ -95,7 +95,6 @@ class MethodDnsDumpster(object):
             )
 
         except Exception as e:
-            raise e
             self.context.out(
                 self.context.strings['methods']['dnsdumpster']['no-connect']
             )
