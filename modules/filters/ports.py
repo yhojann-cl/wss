@@ -109,7 +109,7 @@ class FilterPorts(object):
 
         # Espera a que todos los hilos finalicen
         for threadHandler in self.hostnameContext['threads-handlers']:
-
+            
             # Hasta este punto de la ejecución cabe la posibilidad de que el
             # hilo de proceso ya haya finalizado, si se une con join() producirá
             # un error de continuidad haciendo que nunca pueda finalizar.

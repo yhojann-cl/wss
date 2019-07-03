@@ -90,11 +90,11 @@
             "title"          : "Buscando servicios HTTP ...",
             "progress-clear" : "\r\u001b[2K",
             "progress"       : "    {url} ... ",
-            "found"          : "    -> {url} ({title})",
+            "found"          : "    -> {url} (HTTP-{status-code}: {title})",
             "progress-wait"  : "        Esperando urls restantes ...",
             "node-tree"      : {
                 "http-title"   : "Servicios HTTP",
-                "http-service" : "{url} ({title})"
+                "http-service" : "{url} (HTTP-{status-code}: {title})"
             }
         }
     },

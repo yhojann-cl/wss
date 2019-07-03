@@ -135,6 +135,11 @@ class WCrawler(object):
         if(matches):
             statusCode = int(matches.group(1))
 
+        statusMessage = None
+        matches = re.search(br'HTTP\/\d\.\d (\d+\s.+)', bytesRresponse, re.IGNORECASE | re.MULTILINE)
+        if(matches):
+            statusMessage = matches.group(1).strip()
+
         body = bytesRresponse.split(b'\r\n\r\n')
         headers = body.pop(0).strip()
         body = b'\r\n'.join(body)
@@ -203,6 +208,7 @@ class WCrawler(object):
         # Retorna el resultado
         return {
             'status-code'      : statusCode,
+            'status-message'   : statusMessage,
             'response-content' : body,
             'response-headers' : headers,
             'request-content'  : packet

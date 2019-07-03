@@ -189,8 +189,8 @@ class FilterHttpServices(object):
         self.hostnameContext['current-hostname']   = hostname
         self.hostnameContext['current-ip-address'] = ipAddress
 
-        # 20 hilos de proceso por defecto
-        for threadNumber in range(1, 20):
+        # 100 hilos de proceso por defecto
+        for threadNumber in range(1, 100):
 
             # Puntero del hilo de proceso
             threadHandler = threading.Thread(target=self.threadCheck)
@@ -301,8 +301,10 @@ class FilterHttpServices(object):
                         self.context.strings['filters']['http']['progress-wait']
                     ),
                     parseDict={
-                        'url'   : url,
-                        'title' : title
+                        'url'            : url,
+                        'title'          : (title if title else ''),
+                        'status-code'    : (result['status-code'] if result['status-code'] else '-'),
+                        'status-message' : (result['status-message'].decode() if result['status-message'] else '-')
                     },
                     end=''
                 )
@@ -334,8 +336,10 @@ class FilterHttpServices(object):
                 nodeLine = self.context.parseString(
                     message=self.context.strings['filters']['http']['node-tree']['http-service'],
                     parseDict={
-                        'title' : title,
-                        'url'   : url
+                        'url'            : url,
+                        'title'          : (title if title else ''),
+                        'status-code'    : (result['status-code'] if result['status-code'] else '-'),
+                        'status-message' : (result['status-message'].decode() if result['status-message'] else '-')
                     }
                 )
 
