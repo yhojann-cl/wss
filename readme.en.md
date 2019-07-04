@@ -77,7 +77,8 @@ Let's cut to the chase:
       -f, --filters  List of filters.
                      Available filters:
                        0: Search open ports for each IP address using low level",
-                          sockets (SYN-ACK), very fast but need privileges).",
+                          sockets (SYN-ACK), very fast but need privileges, only
+                          requires 3 threads.
                        1: Search open ports for each IP address. The search is",
                           basic, it does not replace conventional software such",
                           as nmap. Use by default 500 threads.",
@@ -98,7 +99,7 @@ Let's cut to the chase:
 You can try a quick test:
 
     sudo python3 wss.py --host elhacker.net -m 4 -f 02
-    
+
 An example of the final result of a search:
 
     4 subdomains were found

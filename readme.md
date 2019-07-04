@@ -82,7 +82,7 @@ Vamos al grano:
                      Filtros disponibles:
                        0: Busca puertos abiertos por cada dirección IP utilizando
                           sockets a bajo nivel (SYN-ACK), muy veloz pero necesita
-                          privilegios).
+                          privilegios, solo requiere de 3 threads.
                        1: Busca puertos abiertos por cada dirección IP. La búsqueda
                           es básica, no reemplaza a un software convencional como
                           nmap. Utiliza por defecto 500 threads. No necesita
