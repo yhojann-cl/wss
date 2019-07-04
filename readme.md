@@ -1,4 +1,4 @@
-# WSS v2.4.9-beta
+# WSS v2.4.10-beta
 
 [![Chileno](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
 [![Licencia](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
@@ -48,7 +48,7 @@ Vamos al grano:
 
     $ python3 wss.py --help
     WSS (WHK Subdomains Scanner)
-    Version  : v2.4.9-beta
+    Version  : v2.4.10-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        

@@ -25,13 +25,8 @@ class FilterPorts(object):
         # 192.168.0.0\16
         self.classC = IPv4Network(('192.168.0.0', '255.255.0.0'))
 
-        # Contexto del nombre de dominio
-        self.hostnameContext = {
-            'check-ports'        : [ ],
-            'ports-found'        : { },
-            'threads-handlers'   : [ ],
-            'current-ip-address' : None
-        }
+        # Cola de puertos a revisar por dirección IP
+        self.portsStack = [ ]
 
 
     def filterAll(self):
@@ -47,28 +42,32 @@ class FilterPorts(object):
         )
 
         # Procesa cada dirección IP
-        itemNumber = 0
+        ipAddressNumber = 0
         for ipAddress in self.context.results['ip-address']['items'].keys():
 
-            itemNumber += 1
+            ipAddressNumber += 1
 
+            # Solo busca en direcciones IP existentes
             if(ipAddress == 'unknown'):
                 continue
 
             # Crea la estructura del objeto de la dirección IP y sus puertos
             self.context.results['ip-address']['items'][ipAddress]['items']['ports'] = {
                 'title' : self.context.strings['filters']['ports']['node-tree']['ports-title'],
-                'items' : self.findPorts(ipAddress, itemNumber)
+                'items' : { }
             }
 
+            # Realiza la búsqueda de puertos
+            self.findPorts(ipAddress, ipAddressNumber)
 
-    def findPorts(self, ipAddress, itemNumber):
+
+    def findPorts(self, ipAddress, ipAddressNumber):
 
         self.context.out(
             message=self.context.strings['filters']['ports']['find'],
             parseDict={
                 'address': ipAddress,
-                'current': itemNumber,
+                'current': ipAddressNumber,
                 'total'  : len(self.context.results['ip-address']['items'].keys())
             }
         )
@@ -84,39 +83,45 @@ class FilterPorts(object):
         # if(address in self.classA):
         #     pass
 
-        # Contexto del nombre de dominio (para múltiples hilos de proceso)
-        self.hostnameContext['check-ports']        = list(reversed(range(1, 65535)))
-        self.hostnameContext['ports-found']        = { }
-        self.hostnameContext['threads-handlers']   = [ ]
-        self.hostnameContext['current-ip-address'] = ipAddress
+        # Rango de puertos a revisar
+        self.portsStack = list(reversed(range(1, 65535)))
 
-        # 1024 hilos por defecto
-        for threadNumber in range(1, 1024):
+        # Punteros de los hilos de proceso
+        threadsHandlers = [ ]
+
+        # Linux por defecto soporta 1024 threads a menos que se modifique
+        # los límites en /etc/security/limits.conf
+        # 500 hilos por defecto
+        for threadNumber in range(1, 500):
 
             # Puntero del hilo de proceso
-            threadHandler = threading.Thread(target=self.threadCheck)
+            threadHandler = threading.Thread(
+                target=self.threadCheck,
+                kwargs={
+                    'threadNumber' : threadNumber,
+                    'ipAddress'    : ipAddress
+                }
+            )
 
             # Previene la impresión de mensajes de error al final del hilo
             # principal cuando se cancela el progreso con Conrol+C.
             threadHandler.setDaemon(True)
 
-            # Agrega el puntero a la pila de punteros locales
-            self.hostnameContext['threads-handlers'].append(threadHandler)
-
-        # Ejecuta todos los hilos de proceso
-        for threadHandler in self.hostnameContext['threads-handlers']:
+            # Ejecuta el hilo de proceso
             threadHandler.start()
 
-        # Espera a que todos los hilos finalicen
-        for threadHandler in self.hostnameContext['threads-handlers']:
-            
-            # Hasta este punto de la ejecución cabe la posibilidad de que el
-            # hilo de proceso ya haya finalizado, si se une con join() producirá
-            # un error de continuidad haciendo que nunca pueda finalizar.
-            if(not threadHandler.is_alive()):
-                continue
+            # Obtiene el identificador único del hilo de proceso
+            threadsHandlers.append(threadHandler)
 
+        for threadHandler in threadsHandlers:
+            
+            # Espera a que finalice el hilo de proceso
             threadHandler.join()
+
+        # Ordena el resultado de los puertos encontrados
+        self.context.results['ip-address']['items'][ipAddress]['items']['ports']['items'] = (
+            { k: v for k, v in sorted(self.context.results['ip-address']['items'][ipAddress]['items']['ports']['items'].items()) }
+        )
 
         # Limpia el buffer del último estado del progreso de la búsqueda
         self.context.out(
@@ -124,20 +129,18 @@ class FilterPorts(object):
             end=''
         )
 
-        # Ordena el resultado de los puertos encontrados y lo retorna
-        return { k: v for k, v in sorted(self.hostnameContext['ports-found'].items()) }
 
-
-    def threadCheck(self):
+    def threadCheck(self, threadNumber, ipAddress):
 
         while(True):
         
-            if(len(self.hostnameContext['check-ports']) == 0):
-                # No hay mas puertos a buscar
-                break
+            try:
+                # Obtiene el siguiente puerto a buscar
+                port = self.portsStack.pop()
 
-            # Obtiene el siguiente puerto a buscar
-            port = int(self.hostnameContext['check-ports'].pop())
+            except Exception as e:
+                # No hay más puertos a buscar
+                break
 
             self.context.out(
                 message=(
@@ -152,37 +155,36 @@ class FilterPorts(object):
 
             isOpen = False
 
-            try:
-                socketHandler = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                socketHandler.settimeout(7) # Tiempo máximo de espera en segundos
-                socketHandler.connect((
-                    self.hostnameContext['current-ip-address'],
-                    port
-                ))
-                socketHandler.shutdown(1)
-                socketHandler.close()
+            socketHandler = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            socketHandler.settimeout(7) # Tiempo máximo de espera en segundos
 
+            try:
+                socketHandler.connect((ipAddress, port))
                 isOpen = True
 
             except Exception as e:
                 pass
 
-            if(isOpen):
+            socketHandler.close()
 
-                # Reescribe el progreso actual utilizando el mensaje de resultados
-                self.context.out(
-                    message=(
-                        self.context.strings['filters']['ports']['progress-clear'] +
-                        self.context.strings['filters']['ports']['found'] + '\n' +
-                        self.context.strings['filters']['ports']['progress-wait']
-                    ),
-                    parseDict={
-                        'port'  : port
-                    },
-                    end=''
-                )
+            # Si el puerto no está abierto no es necesario continuar
+            if(not isOpen):
+                continue
 
-                # Agrega el puerto a la pila principal de resultados
-                # Como objeto: Para facilitar el acceso a todas sus propiedades
-                #              y extensión del diccionario en otros filtros.
-                self.hostnameContext['ports-found'][port] = None
+            # Reescribe el progreso actual utilizando el mensaje de resultados
+            self.context.out(
+                message=(
+                    self.context.strings['filters']['ports']['progress-clear'] +
+                    self.context.strings['filters']['ports']['found'] + '\n' +
+                    self.context.strings['filters']['ports']['progress-wait']
+                ),
+                parseDict={
+                    'port'  : port
+                },
+                end=''
+            )
+
+            # Agrega el puerto a la pila principal de resultados
+            # Como objeto: Para facilitar el acceso a todas sus propiedades
+            #              y extensión del diccionario en otros filtros.
+            self.context.results['ip-address']['items'][ipAddress]['items']['ports']['items'][port] = None

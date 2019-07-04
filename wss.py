@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from ctypes import *
 import os.path
 import json
 import argparse
@@ -55,9 +56,21 @@ class Controller(object):
         self.version = {
             'major'   : 2,
             'minor'   : 4,
-            'patch'   : 9,
+            'patch'   : 10,
             'release' : 'beta'
         }
+
+#        # Librerías requeridas
+#        if(sys.platform in ['linux', 'linux2', 'darwin']):
+#            try:
+#                # Soluciona el bug de python sobre el manejo de multithreads
+#                # https://github.com/WHK102/wss/issues/2
+#                # https://bugs.python.org/issue18748
+#                # libgcc_s.so.1 must be installed for pthread_cancel to work.
+#                cdll.LoadLibrary('libgcc_s.so.1')
+#
+#            except Exception as e:
+#                pass
 
         # Nombre de dominio principal a procesar
         self.baseHostname = None
