@@ -6,8 +6,6 @@ import threading
 from ipaddress import IPv4Address, IPv4Network
 from IPy import IP
 
-from modules.helpers.crawler import WCrawler
-
 
 class FilterPorts(object):
 

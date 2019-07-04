@@ -3,7 +3,7 @@
 
 import json
 import re
-from modules.helpers.crawler import WCrawler
+from modules.helpers.networking.crawler import WCrawler
 
 
 class MethodCertificateDetails:

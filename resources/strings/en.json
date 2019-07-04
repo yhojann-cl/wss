@@ -34,21 +34,24 @@
         "                 By default all available methods are used.",
         "  -f, --filters  List of filters.",
         "                 Available filters:",
-        "                   0: Search open ports for each IP address. The search is",
+        "                   0: Search open ports for each IP address using low level",
+        "                      sockets (SYN-ACK), very fast but need privileges).",
+        "                   1: Search open ports for each IP address. The search is",
         "                      basic, it does not replace conventional software such",
         "                      as nmap. Use by default 500 threads.",
-        "                   1: Search HTTP services in the ports found by filter 0,",
+        "                   2: Search HTTP services in the ports found by filter 0,",
         "                      otherwise it will use a list of known http ports. Use",
-        "                      by default 20 threads.",
+        "                      by default 20 threads. It does not need privileges but",
+        "                      it is a very slow method.",
         "                 Examples:",
         "                   -f 0",
-        "                   -f 01",
+        "                   -f 02",
         "                 By default, no filter is used.",
         "",
         "Examples:",
-        "  {scriptname} --host com -m 6a -f01",
-        "  {scriptname} --host starbucks.com -f01",
-        "  {scriptname} --host dev.starbucks.com -f01"
+        "  {scriptname} --host com -m 6a -f 02",
+        "  {scriptname} --host starbucks.com -f 02",
+        "  {scriptname} --host dev.starbucks.com -f 02"
     ],
     "result": {
         "result-all-title"       : "- Result:",
@@ -69,7 +72,8 @@
         "empty-hostname"     : "You need give a hostname",
         "empty-methods"      : "You need give at least a search method",
         "unknown-method"     : "The method '{method}' is not found.",
-        "unknown-filter"     : "The filter '{filter}' is not found."
+        "unknown-filter"     : "The filter '{filter}' is not found.",
+        "root-required"      : "The chosen module needs elevated privileges: {module}"
     },
     "filter-begin" : "- Filter {current}/{total}: {title}",
     "filters": {

@@ -26,6 +26,7 @@ from modules.subdomains.dnsdumpster        import MethodDnsDumpster
 from modules.subdomains.dictionary         import MethodDictionary
 
 # Filtros
+from modules.filters.rawports              import FilterRawPorts
 from modules.filters.ports                 import FilterPorts
 from modules.filters.http                  import FilterHttpServices
 
@@ -55,8 +56,8 @@ class Controller(object):
 
         self.version = {
             'major'   : 2,
-            'minor'   : 4,
-            'patch'   : 10,
+            'minor'   : 5,
+            'patch'   : 1,
             'release' : 'beta'
         }
 
@@ -282,9 +283,24 @@ class Controller(object):
             for filterId in arguments.filters:
 
                 if(filterId == '0'):
-                    self.filters.append(FilterPorts(self))
+
+                    # Necesita ser root
+                    if(not self.isRoot()):
+                        self.out(
+                            message=self.strings['errors']['root-required'],
+                            parseDict={
+                                'module': 'FilterRawPorts'
+                            }
+                        )
+                        return
+
+                    self.filters.append(FilterRawPorts(self))
 
                 elif(filterId == '1'):
+                    self.filters.append(FilterPorts(self))
+                    
+
+                elif(filterId == '2'):
                     self.filters.append(FilterHttpServices(self))
 
                 else:
@@ -593,6 +609,14 @@ class Controller(object):
             parseDict={
                 'scriptname': str(sys.argv[0])
             }
+        )
+
+
+    def isRoot(self):
+
+        return (
+            (os.geteuid() == 0) or
+            (os.getenv('SUDO_USER') is not None)
         )
 
 

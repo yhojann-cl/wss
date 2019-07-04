@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from modules.helpers.crawler import WCrawler
+from modules.helpers.networking.crawler import WCrawler
 
 
 class MethodRobtex:

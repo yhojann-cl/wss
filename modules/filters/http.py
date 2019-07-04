@@ -3,7 +3,7 @@
 
 import re
 import threading
-from modules.helpers.crawler import WCrawler
+from modules.helpers.networking.crawler import WCrawler
 
 
 class FilterHttpServices(object):

@@ -1,4 +1,4 @@
-# WSS v2.4.10-beta
+# WSS v2.5.1-beta
 
 [![Chilean](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
 [![License](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
@@ -45,7 +45,7 @@ Let's cut to the chase:
 
     $ python3 wss.py
     WSS (WHK Subdomains Scanner)
-    Version : v2.4.10-beta
+    Version : v2.5.1-beta
     Contact : whk@elhacker.net
     -----------------------------------------
        
@@ -76,21 +76,24 @@ Let's cut to the chase:
                      By default all available methods are used.
       -f, --filters  List of filters.
                      Available filters:
-                       0: Search open ports for each IP address. The search is
-                          basic, it does not replace conventional software such
-                          as nmap. Use by default 500 threads.
-                       1: Search HTTP services in the ports found by filter 0,
-                          otherwise it will use a list of known http ports. Use
-                          by default 20 threads.
+                       0: Search open ports for each IP address using low level",
+                          sockets (SYN-ACK), very fast but need privileges).",
+                       1: Search open ports for each IP address. The search is",
+                          basic, it does not replace conventional software such",
+                          as nmap. Use by default 500 threads.",
+                       2: Search HTTP services in the ports found by filter 0,",
+                          otherwise it will use a list of known http ports. Use",
+                          by default 20 threads. It does not need privileges but",
+                          it is a very slow method.",
                      Examples:
                        -f 0
-                       -f 01
+                       -f 02
                      By default, no filter is used.
        
     Examples:
-      wss.py --host com -m 6a -f 01
-      wss.py --host starbucks.com -f 01
-      wss.py --host dev.starbucks.com -f 01
+      wss.py --host com -m 6a -f 02
+      wss.py --host starbucks.com -f 02
+      wss.py --host dev.starbucks.com -f 02
 
 An example of the final result of a search:
 
