@@ -100,6 +100,10 @@ Vamos al grano:
       sudo wss.py --host starbucks.com -f 02
       sudo wss.py --host dev.starbucks.com -f 02
 
+Puedes intentar una prueba rápida:
+
+    sudo python3 wss.py --host elhacker.net -m 4 -f 02
+
 Un ejemplo del resultado final de una búsqueda:
 
     4 subdominios encontrados
