@@ -48,8 +48,8 @@ Vamos al grano:
 
     $ python3 wss.py --help
     WSS (WHK Subdomains Scanner)
-    Version  : v2.5.1-beta
-    Contact : whk@elhacker.net
+    Versión  : v2.5.1-beta
+    Contacto : whk@elhacker.net
     -----------------------------------------
        
     Uso: wss.py [opciones]
@@ -142,3 +142,11 @@ redundantes, lo que ahorra tiempo en la revisión de los servicio.
 
 La aplicación cuenta con una separación modular de los métodos y filtrados,
 facilitando la creación de nuevos módulos personalizados.
+
+
+## Probado en
+
+- Ubuntu 18.04.2 LTS
+- CentOS 7
+- Debian 9
+- Kali 2019.2

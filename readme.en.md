@@ -138,3 +138,11 @@ reviewing the services.
 
 The application has a modular separation of the methods and filters,
 facilitating the creation of new customized modules.
+
+
+## Tested in
+
+- Ubuntu 18.04.2 LTS
+- CentOS 7
+- Debian 9
+- Kali 2019.2

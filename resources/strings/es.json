@@ -91,6 +91,19 @@
                 "ports-title"  : "Puertos"
             }
         },
+        "raw-ports" : {
+            "title"          : "Filtrando puertos ...",
+            "find"           : "    -> {current}/{total} : {address} ...",
+            "skip"           : "    Omitdo (red interna).",
+            "unknown-skip"   : "    Omitido.",
+            "found"          : "        {source}:{port} Abierto.",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "        Escaneando puerto: {source}:{port} ...",
+            "progress-wait"  : "        Esperando puertos restantes ...",
+            "node-tree"      : {
+                "ports-title"  : "Puertos"
+            }
+        },
         "http": {
             "title"          : "Buscando servicios HTTP ...",
             "progress-clear" : "\r\u001b[2K",

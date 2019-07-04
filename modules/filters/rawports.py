@@ -31,15 +31,16 @@ class FilterRawPorts(object):
         # 192.168.0.0\16
         self.classC = IPv4Network(('192.168.0.0', '255.255.0.0'))
 
-        # El último tiempo del evento de la búsqueda de un puerto
-        self.lastPortEventAt = None
+        # Direcciones IP que se está buscando actualmente, para recibir desde el
+        # sniffer.
+        self.remoteIpAddressStack = [ ]
 
         # Indica si los hilos de proceso pueden continuar o deben detenerse
         self.canContinue = True
 
         # Cantidad de tiempo de espera máximo para detener la búsqueda después
         # del último evento de la búsqueda de puertos.
-        self.maxSecondsTimeout = 7
+        self.maxSecondsTimeout = 10
 
         # Puntero del socket a escucha (para el forzado de la detención del hilo
         # de proceso cuando no hay paquetes de ningún tipo).
@@ -54,9 +55,23 @@ class FilterRawPorts(object):
             parseDict={
                 'current' : self.context.progress['filters']['current'],
                 'total'   : self.context.progress['filters']['total'],
-                'title'   : self.context.strings['filters']['ports']['title']
+                'title'   : self.context.strings['filters']['raw-ports']['title']
             }
         )
+
+        # Direcciones IP que se está buscando actualmente, para recibir desde el
+        # sniffer.
+        self.remoteIpAddressStack = self.context.results['ip-address']['items'].keys()
+
+        # Corre el sniffer en busca de los paquetes de respuesta de puertos
+        threadHandler = threading.Thread(target=self.sniffer)
+
+        # Previene la impresión de mensajes de error al final del hilo
+        # principal cuando se cancela el progreso con Conrol+C.
+        threadHandler.setDaemon(True)
+
+        # Ejecuta el hilo de proceso
+        threadHandler.start()
 
         # Procesa cada dirección IP
         ipAddressNumber = 0
@@ -64,24 +79,38 @@ class FilterRawPorts(object):
 
             ipAddressNumber += 1
 
-            # Solo busca en direcciones IP existentes
-            if(ipAddress == 'unknown'):
-                continue
-
             # Crea la estructura del objeto de la dirección IP y sus puertos
-            self.context.results['ip-address']['items'][ipAddress]['items']['ports'] = {
-                'title' : self.context.strings['filters']['ports']['node-tree']['ports-title'],
-                'items' : { }
-            }
+            if(ipAddress != 'unknown'):
+                self.context.results['ip-address']['items'][ipAddress]['items']['ports'] = {
+                    'title' : self.context.strings['filters']['raw-ports']['node-tree']['ports-title'],
+                    'items' : { }
+                }
 
             # Realiza la búsqueda de puertos
             self.findPorts(ipAddress, ipAddressNumber)
+
+            if(ipAddress == 'unknown'):
+                # No necesita esperar
+                continue
+
+            self.context.out(
+                self.context.strings['filters']['raw-ports']['progress-wait']
+            )
+
+            # Iteración cada x segundos
+            time.sleep(self.maxSecondsTimeout)
+
+        self.canContinue = False
+        self.socketHandlerBind.close()
+
+        # Espera a que finalice el hilo de proceso del sniffer.
+        threadHandler.join()
 
 
     def findPorts(self, ipAddress, ipAddressNumber):
 
         self.context.out(
-            message=self.context.strings['filters']['ports']['find'],
+            message=self.context.strings['filters']['raw-ports']['find'],
             parseDict={
                 'address': ipAddress,
                 'current': ipAddressNumber,
@@ -89,44 +118,23 @@ class FilterRawPorts(object):
             }
         )
 
+        # Solo busca en direcciones IP existentes
+        if(ipAddress == 'unknown'):
+            self.context.out(
+                self.context.strings['filters']['raw-ports']['unknown-skip']
+            )
+            return
+
         # Omite los rangos locales
         # TODO: Puede ser requerido para pentesting.
         if(IP(ipAddress).iptype() in ['PRIVATE', 'LOOPBACK']):
             self.context.out(
-                self.context.strings['filters']['ports']['skip']
+                self.context.strings['filters']['raw-ports']['skip']
             )
-            return []
+            return
 
         # if(address in self.classA):
         #     pass
-
-        # Corre el sniffer en busca de los paquetes de respuesta de puertos
-        threadHandler = threading.Thread(
-            target=self.sniffer,
-            kwargs={
-                'remoteIpAddress' : ipAddress
-            }
-        )
-
-        # Previene la impresión de mensajes de error al final del hilo
-        # principal cuando se cancela el progreso con Conrol+C.
-        threadHandler.setDaemon(True)
-
-        # Ejecuta el hilo de proceso
-        threadHandler.start()
-
-        # Ejecuta el monitor encargado de revisar el tiempo que ha transcurrido
-        # desde el último evento para detener la búsqueda de puertos.
-        threadHandler = threading.Thread(
-            target=self.elapsedMonitor
-        )
-
-        # Previene la impresión de mensajes de error al final del hilo
-        # principal cuando se cancela el progreso con Conrol+C.
-        threadHandler.setDaemon(True)
-
-        # Ejecuta el hilo de proceso
-        threadHandler.start()
 
         interface = Interface()
         tcpHelper = TCPHelper()
@@ -139,10 +147,12 @@ class FilterRawPorts(object):
 
             self.context.out(
                 message=(
-                    self.context.strings['filters']['ports']['progress-clear'] +
-                    self.context.strings['filters']['ports']['progress']
+                    self.context.strings['filters']['raw-ports']['progress-clear'] +
+                    self.context.strings['filters']['raw-ports']['progress']
                 ),
                 parseDict={
+                    'source' : ipAddress,
+                    'target' : localIpAddress,
                     'port': port
                 },
                 end=''
@@ -160,14 +170,7 @@ class FilterRawPorts(object):
             except Exception as e:
                 # Ok, puede suceder, es normal
                 pass
-
-            # Actualiza el tiempo del evento
-            self.lastPortEventAt = datetime.datetime.now()
         
-        # Espera a que finalice el hilo de proceso encargado de esperar los
-        # paquetes.
-        threadHandler.join()
-
         # Ordena el resultado de los puertos encontrados
         self.context.results['ip-address']['items'][ipAddress]['items']['ports']['items'] = (
             { k: v for k, v in sorted(self.context.results['ip-address']['items'][ipAddress]['items']['ports']['items'].items()) }
@@ -175,28 +178,12 @@ class FilterRawPorts(object):
 
         # Limpia el buffer del último estado del progreso de la búsqueda
         self.context.out(
-            message=self.context.strings['filters']['ports']['progress-clear'],
+            message=self.context.strings['filters']['raw-ports']['progress-clear'],
             end=''
         )
 
-
-    def elapsedMonitor(self):
-
-        while True:
-
-            if(not self.lastPortEventAt):
-                continue
-
-            if((datetime.datetime.now() - self.lastPortEventAt).seconds > self.maxSecondsTimeout):
-                self.canContinue = False
-                self.socketHandlerBind.close()
-                break
-
-            # Iteración cada 1 segundo
-            time.sleep(1)
-
     
-    def sniffer(self, remoteIpAddress):
+    def sniffer(self):
 
         interface = Interface()
 
@@ -252,25 +239,24 @@ class FilterRawPorts(object):
             # local.
             if(
                 (not ipv4.target == localIpAddress) or
-                (not ipv4.src == remoteIpAddress)
+                (not ipv4.src in self.remoteIpAddressStack)
             ):
                 continue
 
             # SYN-ACK (puerto abierto)
             if(tcp.flagSyn and tcp.flagAck):
 
-                # Actualiza el tiempo del evento
-                self.lastPortEventAt = datetime.datetime.now()
-
                 # Reescribe el progreso actual utilizando el mensaje de resultados
                 self.context.out(
                     message=(
-                        self.context.strings['filters']['ports']['progress-clear'] +
-                        self.context.strings['filters']['ports']['found'] + '\n' +
-                        self.context.strings['filters']['ports']['progress-wait']
+                        self.context.strings['filters']['raw-ports']['progress-clear'] +
+                        self.context.strings['filters']['raw-ports']['found'] + '\n' +
+                        self.context.strings['filters']['raw-ports']['progress-wait']
                     ),
                     parseDict={
-                        'port' : tcp.srcPort
+                        'source' : ipv4.src,
+                        'target' : ipv4.target,
+                        'port'   : tcp.srcPort
                     },
                     end=''
                 )
@@ -278,4 +264,4 @@ class FilterRawPorts(object):
                 # Agrega el puerto a la pila principal de resultados
                 # Como objeto: Para facilitar el acceso a todas sus propiedades
                 #              y extensión del diccionario en otros filtros.
-                self.context.results['ip-address']['items'][remoteIpAddress]['items']['ports']['items'][tcp.srcPort] = None
+                self.context.results['ip-address']['items'][ipv4.src]['items']['ports']['items'][tcp.srcPort] = None

@@ -90,6 +90,19 @@
                 "ports-title"  : "Ports"
             }
         },
+        "raw-ports" : {
+            "title"          : "Filtering ports...",
+            "find"           : "    -> {current}/{total} : {address} ...",
+            "skip"           : "    Omitted (internal network).",
+            "unknown-skip"   : "    Omitted.",
+            "found"          : "        {source}:{port} Open.",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "        Scanning port: {source}:{port} ...",
+            "progress-wait"  : "        Waiting for remaining ports ...",
+            "node-tree"      : {
+                "ports-title"  : "Ports"
+            }
+        },
         "http": {
             "title"          : "Finding HTTP services ...",
             "progress-clear" : "\r\u001b[2K",
