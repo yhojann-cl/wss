@@ -91,9 +91,9 @@ Let's cut to the chase:
                      By default, no filter is used.
        
     Examples:
-      wss.py --host com -m 6a -f 02
-      wss.py --host starbucks.com -f 02
-      wss.py --host dev.starbucks.com -f 02
+      wss.py --host starbucks.com -f 2
+      sudo wss.py --host starbucks.com -f 02
+      sudo wss.py --host dev.starbucks.com -f 02
 
 An example of the final result of a search:
 

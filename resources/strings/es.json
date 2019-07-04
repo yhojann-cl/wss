@@ -51,9 +51,9 @@
         "                 Por defecto no se utiliza ningún filtro.",
         "",
         "Ejemplos:",
-        "  {scriptname} --host com -m 6a -f 02",
-        "  {scriptname} --host starbucks.com -f 02",
-        "  {scriptname} --host dev.starbucks.com -f 02"
+        "  {scriptname} --host starbucks.com -f 2",
+        "  sudo {scriptname} --host starbucks.com -f 02",
+        "  sudo {scriptname} --host dev.starbucks.com -f 02"
     ],
     "result": {
         "result-all-title"       : "- Resultado final:",
