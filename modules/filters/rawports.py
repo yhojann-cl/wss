@@ -168,7 +168,11 @@ class FilterRawPorts(object):
                     dstPort=port
                 )
             except Exception as e:
-                # Ok, puede suceder, es normal
+                # Ok, puede suceder, es normal.
+                # Por alguna extraña razón el socket en cierto punto arroja un
+                # acceso denegado indicando que no tengo permisos para la 
+                # operación a pesar de tener privilegios elevados, pero de todas
+                # maneras el paquete se envía sin problemas.
                 pass
         
         # Ordena el resultado de los puertos encontrados
@@ -260,6 +264,12 @@ class FilterRawPorts(object):
                     },
                     end=''
                 )
+
+                # Si la dirección IP está en la pila entonces nunca debiera
+                # arrojar una dirección IP que no esté en el diccionario de
+                # resultados, pero por alguna razón una ves sucedió.
+                if(not ipv4.src in self.context.results['ip-address']['items'].keys()):
+                    continue
 
                 # Agrega el puerto a la pila principal de resultados
                 # Como objeto: Para facilitar el acceso a todas sus propiedades

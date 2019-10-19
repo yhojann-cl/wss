@@ -1,4 +1,4 @@
-# WSS v2.5.2-beta
+# WSS v2.5.3-beta
 
 [![Chilean](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
 [![License](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)

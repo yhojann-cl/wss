@@ -264,9 +264,14 @@ class TCPHelper(object):
         # Incluye las cabeceras IP
         socketHandler.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 
+        # Fuerza el envío
+        socketHandler.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+
         # Envía el paquete
         socketHandler.sendto(packet, (toAddress , 0))
     
+        socketHandler.close()
+
 
     def checksum(self, data):
 

@@ -61,7 +61,7 @@ class MethodDnsDumpster(object):
 
         # Busca el token XSRF
         matches = re.search(
-            br'name=\'csrfmiddlewaretoken\'\s+value=\'(.+?)\'',
+            br'name=["\']csrfmiddlewaretoken["\']\s+value=["\'](.+?)["\']',
             result['response-content'],
             re.I | re.M
         )
@@ -69,7 +69,7 @@ class MethodDnsDumpster(object):
         if(not matches):
             # No se pudo encontrar el token
             self.context.out(
-                self.context.strings['methods']['robtex']['no-xsrf-token-found']
+                self.context.strings['methods']['dnsdumpster']['no-xsrf-token-found']
             )
             return
 
