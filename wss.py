@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from ctypes import *
 import os.path
 import json
 import argparse
 import pytz
 import locale
 import socket
+import ctypes
+
 from   datetime         import datetime
 from   anytree          import Node, RenderTree
 from   anytree.importer import DictImporter
+
 
 # Módulos buscadores de subdominios
 from modules.subdomains.axfr               import MethodAxfr
@@ -30,9 +32,13 @@ from modules.filters.rawports              import FilterRawPorts
 from modules.filters.ports                 import FilterPorts
 from modules.filters.http                  import FilterHttpServices
 
+from resources.util.constants import constants
+
 
 # Clase del controlador principal
 class Controller(object):
+
+    strings = {}
 
     def __init__(self):
 
@@ -41,13 +47,14 @@ class Controller(object):
 
         # Obtiene el archivo de textos correspondiente al lenguaje actual si 
         # existe.
-        langFilePath = 'resources/strings/' + str(currentLocale) + '.json'
-        if(not os.path.isfile(langFilePath)):
-            langFilePath = 'resources/strings/en.json'
+        lang_path = 'resources/strings/{0}.json'.format(str(currentLocale))
+
+        if(not os.path.isfile(lang_path)):
+            lang_path = constants.DEFAULT_LANG_PATH
 
         # Carga el archivo de textos
-        with open(langFilePath, 'r') as fileHandler:
-            self.strings = json.load(fileHandler)
+        with open(lang_path, 'r') as file:
+            self.strings = json.load(file)
 
         # Python 3 es requerido
         if sys.version_info < (3, 0):
@@ -423,7 +430,7 @@ class Controller(object):
 
         # Crea el formato de fecha para el archivo a guardar
         dt = datetime.utcnow().replace(tzinfo=pytz.utc).strftime('[%Y-%m-%d %H_%M_%S]')
-        saveLogPath = 'subdomains_' + self.baseHostname + '_' + dt + '.log'
+        saveLogPath = 'outputs/subdomains_' + self.baseHostname + '_' + dt + '.log'
 
         # Mensaje de cabecera del resultado final
         self.out(self.strings['result']['result-all-title'])
@@ -627,7 +634,7 @@ if __name__ == '__main__':
     except (KeyboardInterrupt, SystemExit):
 
         # Posiciona el puntero de la línea de comandos en una línea limpia
-        print('')
+        print('\nSearch interrupted, bye', end='\n', flush=True)
 
         # Salida con estado normal
         exit(0)
