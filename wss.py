@@ -141,6 +141,8 @@ class Controller(object):
         # Pila de filtros en orden
         self.filters = [ ]
 
+        self.api = None
+
         # Estado actual del progreso en general
         self.progress = {
             'methods' : {
@@ -199,13 +201,20 @@ class Controller(object):
             nargs='?'
         )
 
+
+        argparseHandler.add_argument(
+            '-a',
+            '--api-port',
+            dest='api'
+        )
+
         # Procesa todos los argumentos
         arguments, unknownArguments = argparseHandler.parse_known_args(
             sys.argv[1:]
         )
 
         # El nombre de dominio principal es requerido, sino ¿qué buscaremos?
-        if(not arguments.hostname):
+        if((not arguments.hostname) and (not arguments.api)):
             return self.help()
 
         # Establece el nombre de dominio como contexto global
