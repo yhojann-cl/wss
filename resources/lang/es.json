@@ -1,0 +1,224 @@
+{
+    "header": [
+        "WSS (WHK Subdomains Scanner)",
+        "Versión  : v{version}",
+        "Contacto : whk@elhacker.net",
+        "-----------------------------------------",
+        ""
+    ],
+    "usage": [
+        "Uso: {scriptname} [opciones]",
+        "",
+        "Resultado: Un arbol de nombres de dominio (subdominios) encontrados",
+        "agrupados por dirección IP.",
+        "",
+        "Opciones:",
+        "  -h, --help     Muestra el mensaje de ayuda.",
+        "      --host     El nombre de dominio a buscar.",
+        "  -m, --methods  Listado de métodos.",
+        "                 Métodos disponibles:",
+        "                   0: Consulta DNS/AXFR.",
+        "                   1: Consultas DNS a registros comunes (TXT, MX, SPF, etc).",
+        "                   2: Busca en virustotal.com.",
+        "                   3: Busca en robtex.com.",
+        "                   4: Busca en crt.sh.",
+        "                   5: Busca en certificatedetails.com.",
+        "                   6: Busca en google.com (si tiene la api-key).",
+        "                   7: Busca en bing.com.",
+        "                   8: Busca en dnsdumpster.com.",
+        "                   9: Fuerza bruta de 4 caracteres.",
+        "                   a: Utiliza un dictionario de subdominios conocidos.",
+        "                 Ejemplos:",
+        "                   -m 01",
+        "                   -m 49a",
+        "                   -m 0123456789a",
+        "                 Por defecto se utilizan todos los métodos disponibles.",
+        "  -f, --filters  Listado de filtros.",
+        "                 Filtros disponibles:",
+        "                   0: Busca puertos abiertos por cada dirección IP utilizando",
+        "                      sockets a bajo nivel (SYN-ACK), muy veloz pero necesita",
+        "                      privilegios, solo requiere de 3 threads.",
+        "                   1: Busca puertos abiertos por cada dirección IP. La búsqueda",
+        "                      es básica, no reemplaza a un software convencional como",
+        "                      nmap. Utiliza por defecto 500 threads. No necesita",
+        "                      privilegios pero es un método muy lento.",
+        "                   2: Busca servicios HTTP en los puertos encontrados por el",
+        "                      filtro 0, en caso contrario utilizará un listado de",
+        "                      puertos http conocidos. Utiliza por defecto 20 threads.",
+        "                 Ejemplos:",
+        "                   -f 0",
+        "                   -f 02",
+        "                 Por defecto no se utiliza ningún filtro.",
+        "",
+        "Ejemplos:",
+        "  {scriptname} --host starbucks.com -f 2",
+        "  sudo {scriptname} --host starbucks.com -f 02",
+        "  sudo {scriptname} --host dev.starbucks.com -f 02"
+    ],
+    "result": {
+        "result-all-title"       : "- Resultado final:",
+        "unknown-ip-address-key" : "Dirección IP desconocida",
+        "node-tree"              : {
+            "root"            : "{count} subdominios encontrados",
+            "item-printed"    : "    {item}",
+            "hostnames-title" : "Hostnames"
+        },
+        "empty" : "! No hay resultados a mostrar.",
+        "finish": "- Finalizado!"
+    },
+    "log-file": {
+        "saving" : "- Guardando resultados en el archivo: {path}"
+    },
+    "errors": {
+        "bad-python-version" : "Disculpa, Python 3.x, es requerido.",
+        "empty-hostname"     : "Necesita indicar un nombre de dominio.",
+        "empty-methods"      : "Necesita indicar por lo menos un método de búsqueda.",
+        "unknown-method"     : "El método '{method}' no existe.",
+        "unknown-filter"     : "El filtro '{filter}' no existe.",
+        "root-required"      : "El módulo elegido necesita privilegios elevados: {module}"
+    },
+    "filter-begin" : "- Filtro {current}/{total}: {title}",
+    "filters": {
+        "ports" : {
+            "title"          : "Filtrando puertos ...",
+            "find"           : "    -> {current}/{total} : {address} ...",
+            "skip"           : "    Omitdo (red interna).",
+            "found"          : "        {port} Abierto.",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "        Escaneando puerto: {port} ...",
+            "progress-wait"  : "        Esperando puertos restantes ...",
+            "node-tree"      : {
+                "ports-title"  : "Puertos"
+            }
+        },
+        "raw-ports" : {
+            "title"          : "Filtrando puertos ...",
+            "find"           : "    -> {current}/{total} : {address} ...",
+            "skip"           : "    Omitdo (red interna).",
+            "unknown-skip"   : "    Omitido.",
+            "found"          : "        {source}:{port} Abierto.",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "        Escaneando puerto: {source}:{port} ...",
+            "progress-wait"  : "        Esperando puertos restantes ...",
+            "node-tree"      : {
+                "ports-title"  : "Puertos"
+            }
+        },
+        "http": {
+            "title"          : "Buscando servicios HTTP ...",
+            "progress-clear" : "\r\u001b[2K",
+            "progress"       : "    {url} ... ",
+            "found"          : "    -> {url} (HTTP-{status-code}: {title})",
+            "progress-wait"  : "        Esperando urls restantes ...",
+            "node-tree"      : {
+                "http-title"   : "Servicios HTTP",
+                "http-service" : "{url} (HTTP-{status-code}: {title})"
+            }
+        }
+    },
+    "method-begin" : "- Método {current}/{total}: {title}",
+    "methods" : {
+        "axfr"                : {
+            "title"                    : "Obtención desde transferencia de zona NS AXFR",
+            "getting-ns-servers"       : "    Obteniendo registros NS ...",
+            "unable-to-get-ns-servers" : "    ! Imposible obtener los servidores NS desde el registro DNS.",
+            "making-axfr-queries"      : "    Realizando consultas AXFR:",
+            "ns-progress"              : "        -> {nameserver} ... ",
+            "ns-vulnerable"            : "Vulnerable! ({count} registros encontrados).",
+            "getting-items"            : "    Registros encontrados:",
+            "item-found"               : "        {hostname} ({ip-address})",
+            "ns-not-vulnerable"        : "No es vulnerable."
+        },
+        "dns-queries"         : {
+            "title"                    : "Obtención desde registros NS, TXT, SPF y MX",
+            "title-query-type"         : "    Realizando consulta {type} ...",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
+            "no-items-found"           : "    ! No hay registros que apunten al hostname principal."
+        },
+        "virus-total"         : {
+            "title"                    : "Obtención desde virustotal.com",
+            "paginating"               : "    Obteniendo desde página {number} ...",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
+            "no-more"                  : "    ! No hay más resultados.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API)."
+        },
+        "robtex"              : {
+            "title"                    : "Obtención desde robtex.com",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "empty"                    : "    No hay subdominios encontrados.",
+            "item-found"               : "    -> {hostname} ({ip-address}) Encontrado."
+        },
+        "crt-sh"              : {
+            "title"                    : "Obtención desde crt.sh",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API).",
+            "empty"                    : "    No hay subdominios encontrados.",
+            "item-found"               : "    -> {hostname} ({ip-address}) Encontrado."
+        },
+        "certificate-details" : {
+            "title"                    : "Obtención desde certificatedetails.com",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API).",
+            "empty"                    : "    No hay subdominios encontrados.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
+            "find-links"               : "    Buscando en enlaces conocidos ...",
+            "find-clear"               : "\r\u001b[2K",
+            "find-link"                : "    Buscando en enlace {link-id}/{total-links} ..."
+        },
+        "google"              : {
+            "title"                    : "Obtención desde google.com",
+            "no-api-key"               : "    ! Falta la Api-Key de Google",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "pagination"               : "    Paginando ...",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
+            "no-more-results"          : "    No hay más resultados.",
+            "corrupt-response"         : "    ! El servidor no ha respondido correctamente (json corrupto desde API)."
+        },
+        "bing"                : {
+            "title"                    : "Obtención desde bing.com",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "pagination"               : "    Paginando ...",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado.",
+            "no-more-results"          : "    No hay más resultados."
+        },
+        "dnsdumpster"         : {
+            "title"                    : "Obtención desde dnsdumpster.com",
+            "no-connect"               : "    ! Imposible conectar al servidor.",
+            "wrong-status-http"        : "    ! El servidor no ha respondido correctamente: HTTP status {id}",
+            "getting-token-xsrf"       : "    Creando sesión en el servidor ...",
+            "no-xsrf-token-found"      : "    ! Imposible obtener el token XSRF de la sesión.",
+            "getting-subdomains"       : "    Obteniendo los datos utilizando la sesión obtenida ...",
+            "empty"                    : "    No hay subdominios encontrados.",
+            "item-found"               : "        -> {hostname} ({ip-address}) Encontrado."
+        },
+        "dictionary"          : {
+            "wildcard-detected"        : "    ! Se ha detectado un comodín como subdominio, no se puede revisar.",
+            "counting-items"           : "    Contando los items del diccionario ...",
+            "total-items"              : "    {total-items} Subdominios a procesar.",
+            "loading-threads"          : "    Cargando threads en memoria ...",
+            "progress-pre"             : "\n\n\n\n",
+            "progress-clear"           : "\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K",
+            "progress"                 : [
+                "",
+                "    Verificando : {hostname} ...",
+                "    Progreso    : {current-line} / {total-lines} - {percent-lines}",
+                "    Threads     : {total-threads}",
+                "    Reintentos  : {total-retries}"
+            ],
+            "item-found"                : "        -> {hostname} ({ip-address}) Encontrado."
+        },
+        "dictionary-4"        : {
+            "title"                    : "Obtención a traves de fuerza bruta (4 carácteres)"
+        },
+        "dictionary-words"    : {
+            "title"                    : "Obtención a traves de un diccionario de subdominios conocidos"
+        }
+    }
+}
