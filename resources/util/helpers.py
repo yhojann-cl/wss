@@ -13,14 +13,15 @@ class Helper(object):
     def langexists(self, file):
         return path.isfile(file) is True
 
-    def getlang(self, buf, p, c):
+    def getlang(self, buf, p, c=''):
         if isinstance(buf, dict):
             parent = buf.get(p)
             if isinstance(parent, dict):
                 return parent.get(c)
             elif isinstance(parent, list):
-                s = ", "
-                s.join(parent)
+                s = ""
+                for _s in parent:
+                    s += _s + '\n'
                 return s
             else:
                 return parent
