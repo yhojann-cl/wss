@@ -1,6 +1,7 @@
-# WSS v2.5.2-beta
+# WSS v2.6
 
 [![Chileno](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
+[![Colombiano](https://img.shields.io/badge/From-Colombia-blueviolet)](https://es.wikipedia.org/wiki/Colombia)
 [![Licencia](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Contribuciones](https://img.shields.io/badge/contributions-welcome-blue.svg)](https://github.com/WHK102/wss/issues)
 [![Donaciones](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/whk102)
