@@ -1,10 +1,9 @@
 {
     "header": [
         "WSS (WHK Subdomains Scanner)",
-        "Version : v{version}",
-        "Contact : whk@elhacker.net",
-        "-----------------------------------------",
-        ""
+        "Version     : {}",
+        "Contact     : whk@elhacker.net",
+        "Current date: {}"
     ],
     "usage": [
         "Usage: {scriptname} [options]",
@@ -222,8 +221,6 @@
         }
     },
     "cli": {
-        "lang-setted": "- Language setted to {}",
-        "no-cli-args": "- No CLI arguments found, try --help command for more info.",
-        "running-with-args":"- Running with {} arguments [{}]"
+        "lang-setted": "- Language setted to {}."
     }
 }
