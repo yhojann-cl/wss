@@ -12,4 +12,5 @@ def lang_from_path(path):
         try:
             return json.load(f)
         except Exception as e:
-            return None
+        	pass
+    return None
