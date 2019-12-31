@@ -32,6 +32,7 @@ class Wss(object):
 
         self.load_lang(self.define_lang(args))
 
+    #Define path for language to load
     def define_lang(self, args):
         h = Helper()
         #Trying found by long flag
@@ -51,6 +52,7 @@ class Wss(object):
             langpath = h.formatter('resources/lang/{}.json', [lang.lower()])
             return langpath
 
+    #Load language
     def load_lang(self, langpath):
         h = Helper()
 
