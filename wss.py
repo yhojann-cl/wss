@@ -16,12 +16,13 @@ class Wss(object):
     langpath = None
 
     def __init__(self):
+
         #Helper instance
         h = Helper()
         #Print banner
         Logging.log(h.ftext('WHK Subdomains Scanner'), LogLevel.CLI)
         #Parse arguments from cli
-        args = self.__parse_args()
+        args = self.build_args()
         argc = len(args)
         #Check if arguments was passed
         if not argc > 0:
@@ -31,6 +32,7 @@ class Wss(object):
             exit(-1)
 
         self.load_lang(self.define_lang(args))
+        self.parse_args(args)
 
     #Define path for language to load
     def define_lang(self, args):
@@ -45,8 +47,7 @@ class Wss(object):
                                        [get_locale()])
                 return langpath
             else:
-                langpath = h.formatter('resources/lang/{}.json',
-                                       [lang])
+                langpath = h.formatter('resources/lang/{}.json', [lang])
                 return langpath
         else:
             langpath = h.formatter('resources/lang/{}.json', [lang.lower()])
@@ -57,9 +58,9 @@ class Wss(object):
         h = Helper()
 
         if not h.langexists(langpath):
-                Logging.log('Can\'t define language to show, exiting...',
-                            LogLevel.DANGER)
-                exit(-1)
+            Logging.log('Can\'t define language to show, exiting...',
+                        LogLevel.DANGER)
+            exit(-1)
         else:
             self.langbuf = lang_from_path(langpath)
             if not isinstance(self.langbuf, dict):
@@ -73,7 +74,7 @@ class Wss(object):
             h.formatter(h.getlang(self.langbuf, 'cli', 'lang-setted'),
                         [langpath]), LogLevel.CLI)
 
-    def __parse_args(self):
+    def build_args(self):
         flag = None
         args = {}
         for (x, y) in enumerate(sys.argv[1:]):
@@ -93,7 +94,11 @@ class Wss(object):
                     args[flag] = y
         return args
 
-
+    def parse_args(self, args):
+        for (flag) in args:
+            if ((flag == '-s') or (flag == '--server')):
+                pass
+                
 if __name__ == '__main__':
     try:
         wss = Wss()
