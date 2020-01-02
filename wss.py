@@ -9,11 +9,24 @@ from resources.util.helpers import Helper
 from resources.util.logging import Logging, LogLevel
 
 
+def runtime():
+    print("Runtime!")
+
+
 class Wss(object):
 
     langbuf = None
     lang = None
     langpath = None
+    CMDS = [{
+        "title": "Server flag mode",
+        "flags": ['s', 'server'],
+        "runtime": runtime
+    }, {
+        "title": "Language flag mode",
+        "flags": ['l', 'lang'],
+        "runtime": runtime
+    }]
 
     def __init__(self):
 
@@ -38,16 +51,17 @@ class Wss(object):
     def define_lang(self, args):
         h = Helper()
         #Trying found by long flag
-        lang = args.get('--lang')
+        lang = args.get('lang')
         if lang is None:
             #Trying found by short flag
-            lang = args.get('-l')
+            lang = args.get('l')
             if lang is None:
                 langpath = h.formatter('resources/lang/{}.json',
                                        [get_locale()])
                 return langpath
             else:
-                langpath = h.formatter('resources/lang/{}.json', [lang])
+                langpath = h.formatter('resources/lang/{}.json',
+                                       [lang.lower()])
                 return langpath
         else:
             langpath = h.formatter('resources/lang/{}.json', [lang.lower()])
@@ -75,30 +89,46 @@ class Wss(object):
                         [langpath]), LogLevel.CLI)
 
     def build_args(self):
-        flag = None
+        cf = None
         args = {}
-        for (x, y) in enumerate(sys.argv[1:]):
-            f = y[:1]
-            fe = f * 2
-            #if pair-number case, as flag
-            if ((x % 2) == 0):
-                if ((f == '-') or (fe == '--')):
-                    args[y] = None
-                    flag = y
-            #otherwise, as flag param
+        for f in sys.argv[1:]:
+            r = self.iva(f)
+            if not r is None:
+                args[r] = None
+                cf = r
             else:
-                if ((f == '-') or (fe == '--')):
-                    args[y] = None
-                    flag = y
-                else:
-                    args[flag] = y
+                args[cf] = f
+                cf = None
         return args
 
+    def iva(self, a):
+        i = a[:2]
+        r = None
+        if (i == '--'):
+            r = a[2:]
+        else:
+            i = a[:1]
+            if (i == '-'):
+                r = a[1:]
+        return r
+
     def parse_args(self, args):
-        for (flag) in args:
-            if ((flag == '-s') or (flag == '--server')):
-                pass
-                
+        h = Helper()
+        for flag in args.keys():
+            cmd = self.found_command(flag)
+            if not cmd is None:
+                runtime = cmd.get('runtime')
+                runtime()
+            else:
+                print('not found!', flag)
+
+    def found_command(self, s):
+        for command in self.CMDS:
+            _list = command.get('flags')
+            if s in _list:
+                return command
+        return None
+            #return 
 if __name__ == '__main__':
     try:
         wss = Wss()
