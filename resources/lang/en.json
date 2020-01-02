@@ -2,7 +2,8 @@
     "header": [
         "WSS (WHK Subdomains Scanner)",
         "Version     : {}",
-        "Contact     : whk@elhacker.net, admin@undernode.com",
+        "Contact     : whk@elhacker.net",
+        "Contributors: admin@undernode.com",
         "Current date: {}"
     ],
     "usage": [
@@ -221,6 +222,7 @@
         }
     },
     "cli": {
-        "lang-setted": "- Language setted to {}."
+        "lang-setted": "- Language setted to {}.",
+        "unknown-command": "Command '{}' not recognized. Try --help (or -h) for more info"
     }
 }
