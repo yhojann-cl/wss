@@ -63,6 +63,6 @@ class MethodVirusTotal:
         # ¿Necesita continuar paginando resultados?
         if (('links' in result) and ('next' in result['links'])
                 and (result['links'])):
-            self.find(hostname=hostnames, url=str(result['links']['next']))
-            
+            self.find(hostname=hostname, url=str(result['links']['next']))
+
         return self.hostnames
