@@ -1,4 +1,5 @@
 import re
+import socket
 
 from os import path
 from time import strftime, localtime, time
@@ -62,3 +63,19 @@ class Helper(object):
             return r.group()
         else:
             return None
+
+    def resolve_dns(self, address):
+        if self.ip_validate(address) is not None:
+            return [address]
+        else:
+            response = []
+            try:
+                dns = socket.gethostbyname_ex(address)
+                for record in dns:
+                    if (isinstance(record, list) and (len(record) > 0)):
+                        response += record
+                    else:
+                        response.append(record)
+                return response
+            except Exception as e:
+                return [address]
