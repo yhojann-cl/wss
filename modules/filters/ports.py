@@ -89,7 +89,5 @@ class FilterPorts(object):
             # Si el puerto no está abierto no es necesario continuar
             if (not isOpen):
                 continue
-
-            print('ipaddress:', ipaddress, 'open port: ', str(port))
-
+            #Add open port to list
             self.ports.append(port)
