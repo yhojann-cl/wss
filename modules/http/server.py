@@ -133,14 +133,26 @@ class HttpServer(object):
         for m in methods:
             if (m == 'axfr'):
                 axfr = MethodAxfr()
-                data[m] = {'data': axfr.find(req.get('host'))}
+                data['axfr'] = {'data': axfr.find(req.get('host'))}
             elif (m == 'bing'):
                 bing = MethodBing()
-                data[m] = {'data': bing.find(req.get('host'))}
+                data['bing'] = {'data': bing.find(req.get('host'))}
             elif (m == 'crtdtl'):
                 crtdtl = MethodCertificateDetails()
-                data[m] = {'data': crtdtl.find(req.get('host'))}
+                data['certificatedetails'] = {'data': crtdtl.find(req.get('host'))}
             elif (m == 'crt'):
                 crt = MethodCrtSh()
-                data[m] = {'data': crt.find(req.get('host'))}              
+                data['crtsh'] = {'data': crt.find(req.get('host'))}
+            elif (m == 'dnsd'):
+                dnsd = MethodDnsDumpster()
+                data['dnsdumpster'] = {'data': dnsd.find(req.get('host'))}
+            elif (m == 'dnsq'):
+                dnsq = MethodDnsQueries()
+                data['dnsqueries'] = {'data': dnsq.find(req.get('host'))}
+            elif (m == 'robt'):
+                robt = MethodRobtex()
+                data['robtex'] = {'data': robt.find(req.get('host'))}
+            elif (m == 'virust'):
+                virust = MethodVirusTotal()
+                data['virustotal'] = {'data': virust.find(req.get('host'))}
         return data
