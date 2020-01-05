@@ -33,8 +33,8 @@ class HttpServer(object):
     port = 0
     debug = 'off'
     """
-		HTTP server mode for WHK Subdomain Scanner
-	"""
+        HTTP server mode for WHK Subdomain Scanner
+    """
     def __init__(self, host, port, debug='off'):
         self.host = host
         self.port = port
@@ -69,9 +69,10 @@ class HttpServer(object):
 
     @HTTP.route('/methods', methods=['POST'])
     def methods():
+        response_bad_request = {'message': 'Bad Request'}
         if request.is_json is True:
             req = request.get_json()
-            if 'method' not in req:
+            if 'methods' not in req:
                 return response_bad_request, 400
             elif 'host' not in req:
                 return response_bad_request, 400
@@ -123,10 +124,23 @@ class HttpServer(object):
     @staticmethod
     def run_method(req):
 
-        method = req.get('method')
-        data = {'message': 'Unknown subdomain method'}
+        methods = req.get('methods')
+        if not isinstance(methods, list):
+            return {'message': 'Invalid \'methods\' value'}
 
-        if (method == 'axfr'):
-            axfr = MethodAxfr()
-            data = {'data': axfr.find(req.get('host'))}
+        data = {}
+
+        for m in methods:
+            if (m == 'axfr'):
+                axfr = MethodAxfr()
+                data[m] = {'data': axfr.find(req.get('host'))}
+            elif (m == 'bing'):
+                bing = MethodBing()
+                data[m] = {'data': bing.find(req.get('host'))}
+            elif (m == 'crtdtl'):
+                crtdtl = MethodCertificateDetails()
+                data[m] = {'data': crtdtl.find(req.get('host'))}
+            elif (m == 'crt'):
+                crt = MethodCrtSh()
+                data[m] = {'data': crt.find(req.get('host'))}              
         return data
