@@ -3,6 +3,7 @@ import os
 
 from flask import *
 from resources.util.helpers import Helper
+from modules.filters.ports import FilterPorts
 
 TEMPLATE_DIR = os.path.join(os.getcwd(), 'modules/http/templates')
 STATIC_DIR = os.path.join(os.getcwd(), 'modules/http/static')
@@ -37,13 +38,21 @@ class HttpServer(object):
 
     @HTTP.route('/filters', methods=['POST'])
     def filters():
-
+        response_bad_request = {'message': 'Bad Request'}
         if request.is_json is True:
-            res = request.get_json()
-            return res
+            req = request.get_json()
+            if 'method' not in req:
+                return response_bad_request, 400
+            elif 'host' not in req:
+                return response_bad_request, 400
+            else:
+                fp = FilterPorts()
+                data = {
+                	'data': fp.findPorts(req['host'])
+                }
+                return data
         else:
-            response = {'message': 'Bad Request'}
-            return response, 404
+            return response_bad_request, 400
 
     @HTTP.errorhandler(404)
     def not_found(error):
