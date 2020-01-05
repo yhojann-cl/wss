@@ -54,7 +54,7 @@ class FilterRawPorts(object):
             self.findPorts(address)
 
             # Iteración cada x segundos
-            time.sleep(2)
+            time.sleep(10)
 
         self.canContinue = False
         self.socketHandlerBind.close()
