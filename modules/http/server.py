@@ -4,6 +4,8 @@ import os
 from flask import *
 from resources.util.helpers import Helper
 from modules.filters.ports import FilterPorts
+from modules.filters.http import FilterHttpServices
+from modules.filters.rawports import FilterRawPorts
 
 TEMPLATE_DIR = os.path.join(os.getcwd(), 'modules/http/templates')
 STATIC_DIR = os.path.join(os.getcwd(), 'modules/http/static')
@@ -46,11 +48,11 @@ class HttpServer(object):
             elif 'host' not in req:
                 return response_bad_request, 400
             else:
-                fp = FilterPorts()
-                data = {
-                	'data': fp.findPorts(req['host'])
-                }
-                return data
+                try:
+                    return HttpServer.run_method(req)
+                except Exception as e:
+                    print(e)
+                    return response_bad_request, 400
         else:
             return response_bad_request, 400
 
@@ -69,3 +71,20 @@ class HttpServer(object):
 
     def start(self):
         HTTP.run(host=self.host, port=self.port, debug=self.debug)
+
+    @staticmethod
+    def run_method(req):
+
+        method = int(req.get('method'))
+        data = {'message': 'Unknown filter method'}
+
+        if (method == 1):
+            filter_ports = FilterPorts()
+            data = {'data': filter_ports.findPorts(req.get('host'))}
+        elif (method == 2):
+            filter_ws = FilterHttpServices()
+            data = {'data': filter_ws.findHttpServices(req.get('host'))}
+        elif (method == 3):
+            filter_raw = FilterRawPorts()
+            data = {'data': filter_raw.filter(req.get('host'))}
+        return data
