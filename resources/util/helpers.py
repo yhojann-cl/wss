@@ -76,6 +76,17 @@ class Helper(object):
                         response += record
                     else:
                         response.append(record)
+                response = list(filter(lambda v: isinstance(v, str), response))
+                
                 return response
             except Exception as e:
                 return [address]
+
+    def hostname_validate(self, host):
+        if not isinstance(host, str):
+            return None
+        else:
+            if host.count('.') >= 1:
+                return host
+            else:
+                return None
