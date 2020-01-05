@@ -7,6 +7,17 @@ from modules.filters.ports import FilterPorts
 from modules.filters.http import FilterHttpServices
 from modules.filters.rawports import FilterRawPorts
 
+from modules.subdomains.axfr import MethodAxfr
+from modules.subdomains.dnsqueries import MethodDnsQueries
+from modules.subdomains.virustotal import MethodVirusTotal
+from modules.subdomains.robtex import MethodRobtex
+from modules.subdomains.crtsh import MethodCrtSh
+from modules.subdomains.certificatedetails import MethodCertificateDetails
+from modules.subdomains.google import MethodGoogle
+from modules.subdomains.bing import MethodBing
+from modules.subdomains.dnsdumpster import MethodDnsDumpster
+from modules.subdomains.dictionary import MethodDictionary
+
 TEMPLATE_DIR = os.path.join(os.getcwd(), 'modules/http/templates')
 STATIC_DIR = os.path.join(os.getcwd(), 'modules/http/static')
 
@@ -43,6 +54,23 @@ class HttpServer(object):
         response_bad_request = {'message': 'Bad Request'}
         if request.is_json is True:
             req = request.get_json()
+            if 'filter' not in req:
+                return response_bad_request, 400
+            elif 'host' not in req:
+                return response_bad_request, 400
+            else:
+                try:
+                    return HttpServer.run_filter(req)
+                except Exception as e:
+                    print(e)
+                    return response_bad_request, 400
+        else:
+            return response_bad_request, 400
+
+    @HTTP.route('/methods', methods=['POST'])
+    def methods():
+        if request.is_json is True:
+            req = request.get_json()
             if 'method' not in req:
                 return response_bad_request, 400
             elif 'host' not in req:
@@ -73,9 +101,9 @@ class HttpServer(object):
         HTTP.run(host=self.host, port=self.port, debug=self.debug)
 
     @staticmethod
-    def run_method(req):
+    def run_filter(req):
 
-        method = int(req.get('method'))
+        method = int(req.get('filter'))
         data = {'message': 'Unknown filter method'}
 
         if (method == 1):
@@ -85,6 +113,20 @@ class HttpServer(object):
             filter_ws = FilterHttpServices()
             data = {'data': filter_ws.findHttpServices(req.get('host'))}
         elif (method == 3):
-            filter_raw = FilterRawPorts()
-            data = {'data': filter_raw.filter(req.get('host'))}
+            if ((os.geteuid() == 0) or (os.getenv('SUDO_USER') is not None)):
+                filter_raw = FilterRawPorts()
+                data = {'data': filter_raw.filter(req.get('host'))}
+            else:
+                data = {'message': 'Not privileges granted'}
+        return data
+
+    @staticmethod
+    def run_method(req):
+
+        method = req.get('method')
+        data = {'message': 'Unknown subdomain method'}
+
+        if (method == 'axfr'):
+            axfr = MethodAxfr()
+            data = {'data': axfr.find(req.get('host'))}
         return data
