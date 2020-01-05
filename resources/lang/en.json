@@ -7,13 +7,15 @@
         "Current date: {}"
     ],
     "usage": [
-        "Usage: {scriptname} [options]",
+        "Usage: wss.py [options]",
         "",
-        "Result: A tree of host names (subdomains) found grouped by IP address.",
+        "Result: A tree of host names (subdomains) found grouped by IP address. (only CLI)",
         "",
         "Options:",
         "  -h, --help     Show the help message.",
         "      --host     The host name to search.",
+        "  -a, --api      WSS API REST",
+        "  -l, --lang     Define language to use (system language if null)",
         "  -m, --methods  List of methods.",
         "                 Available methods:",
         "                   0: DNS/AXFR query.",
@@ -50,9 +52,7 @@
         "                 By default, no filter is used.",
         "",
         "Examples:",
-        "  {scriptname} --host starbucks.com -f 2",
-        "  sudo {scriptname} --host starbucks.com -f 02",
-        "  sudo {scriptname} --host dev.starbucks.com -f 02"
+        "  wss.py --host starbucks.com -f 2"
     ],
     "result": {
         "result-all-title": "- Result:",
