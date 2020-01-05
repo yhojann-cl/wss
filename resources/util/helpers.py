@@ -1,3 +1,5 @@
+import re
+
 from os import path
 from time import strftime, localtime, time
 from pyfiglet import Figlet
@@ -46,3 +48,17 @@ class Helper(object):
 
     def formatter(self, fmt, args):
         return fmt.format(*args)
+
+    def ip_validate(self, mask):
+        r = re.match(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$', mask)
+        if r:
+            return r.group()
+        else:
+            return None
+
+    def port_validate(self, mask):
+        r = re.match(r'^\d{4}$', mask)
+        if r:
+            return r.group()
+        else:
+            return None
