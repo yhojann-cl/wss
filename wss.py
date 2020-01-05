@@ -2,15 +2,38 @@
 # # -*- coding: utf-8 -*-
 
 import sys
+import socket
 
 from resources.util.constants import constants
 from resources.util.i18n import get_locale, lang_from_path
 from resources.util.helpers import Helper
 from resources.util.logging import Logging, LogLevel
 
+from modules.http.server import HttpServer
 
-def runtime():
-    print("Runtime!")
+
+def show_help(langbuf, param):
+    h = Helper()
+    Logging.log(h.getlang(langbuf, 'usage', None), LogLevel.CLI)
+
+
+def run_server(langbuf, param):
+    h = Helper()
+    c = param.split(':')
+    ip = '127.0.0.1'
+    port = 3000
+    debug = 'on'
+    if len(c):
+        for v in c:
+            if h.ip_validate(v) is not None:
+                ip = v
+            elif h.port_validate(v) is not None:
+                port = v
+            else:
+                if v in ['on', 'off']:
+                    debug = v
+    http = HttpServer(ip, port, debug)
+    http.start()
 
 
 class Wss(object):
@@ -19,13 +42,11 @@ class Wss(object):
     lang = None
     langpath = None
     CMDS = [{
-        "title": "Server flag mode",
         "flags": ['s', 'server'],
-        "runtime": runtime
+        "runtime": run_server
     }, {
-        "title": "Language flag mode",
-        "flags": ['l', 'lang'],
-        "runtime": runtime
+        "flags": ['h', 'help'],
+        "runtime": show_help
     }]
 
     def __init__(self):
@@ -84,23 +105,33 @@ class Wss(object):
         Logging.log(
             h.formatter(h.getlang(self.langbuf, 'header', None),
                         [h.version(), h.gettime()]), LogLevel.CLI)
-        Logging.log(
-            h.formatter(h.getlang(self.langbuf, 'cli', 'lang-setted'),
-                        [langpath]), LogLevel.CLI)
 
+    #build args cli by sys.argv[]
     def build_args(self):
         cf = None
         args = {}
-        for f in sys.argv[1:]:
-            r = self.iva(f)
-            if not r is None:
-                args[r] = None
-                cf = r
+        for (g, f) in enumerate(sys.argv[1:]):
+            if ((g % 2) == 0):
+                r = self.iva(f)
+                if r is not None:
+                    args[r] = None
+                    cf = r
+                else:
+                    if cf is not None:
+                        args[cf] = f
+                        cf = None
             else:
-                args[cf] = f
-                cf = None
+                r = self.iva(f)
+                if r is not None:
+                    args[r] = None
+                    cf = r
+                else:
+                    if cf is not None:
+                        args[cf] = f
+                        cf = None
         return args
 
+    #check if a is a valid argument
     def iva(self, a):
         i = a[:2]
         r = None
@@ -112,23 +143,24 @@ class Wss(object):
                 r = a[1:]
         return r
 
+    #check commands and lauch it
     def parse_args(self, args):
         h = Helper()
         for flag in args.keys():
             cmd = self.found_command(flag)
             if not cmd is None:
                 runtime = cmd.get('runtime')
-                runtime()
-            else:
-                print('not found!', flag)
+                runtime(self.langbuf, args[flag])
 
+    #found a define command
     def found_command(self, s):
         for command in self.CMDS:
             _list = command.get('flags')
             if s in _list:
                 return command
         return None
-            #return 
+
+
 if __name__ == '__main__':
     try:
         wss = Wss()
