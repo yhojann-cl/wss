@@ -28,6 +28,10 @@ from modules.subdomains.dictionary import MethodDictionary
 
 hostname = None
 
+if sys.version_info < (3, 0):
+    Logging.log('Wrong Python version, exiting', LogLevel.DANGER)
+    exit(-1)
+
 
 def show_help(langbuf, param):
     h = Helper()
