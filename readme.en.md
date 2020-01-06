@@ -1,4 +1,4 @@
-# WSS v2.5.3-beta
+# WSS v2.6
 
 [![Chilean](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
 [![License](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
@@ -43,11 +43,28 @@ The requirements can be installed as follows:
 
 Let's cut to the chase:
 
-    $ python3 wss.py
+    __ |     / /__  / / /__  //_/
+    __ | /| / /__  /_/ /__  ,<   
+    __ |/ |/ / _  __  / _  /| |  
+    ____/|__/  /_/ /_/  /_/ |_|  
+                                 
+    ________      ______ _________                       _____               
+    __  ___/___  ____  /_______  /____________ _________ ___(_)______________
+    _____ \_  / / /_  __ \  __  /_  __ \_  __ `__ \  __ `/_  /__  __ \_  ___/
+    ____/ // /_/ /_  /_/ / /_/ / / /_/ /  / / / / / /_/ /_  / _  / / /(__  ) 
+    /____/ \__,_/ /_.___/\__,_/  \____//_/ /_/ /_/\__,_/ /_/  /_/ /_//____/  
+                                                                             
+    ________                                       
+    __  ___/___________ ___________________________
+    _____ \_  ___/  __ `/_  __ \_  __ \  _ \_  ___/
+    ____/ // /__ / /_/ /_  / / /  / / /  __/  /    
+    /____/ \___/ \__,_/ /_/ /_//_/ /_/\___//_/     
+                                                   
     WSS (WHK Subdomains Scanner)
-    Version : v2.5.2-beta
-    Contact : whk@elhacker.net
-    -----------------------------------------
+    Version     : 2.6
+    Contact     : whk@elhacker.net
+    Contributors: admin@undernode.com
+    Current date: Jan  6, 2020 14:23:28
        
     Usage: wss.py [options]
        
