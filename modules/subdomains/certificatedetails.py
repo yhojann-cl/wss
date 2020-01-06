@@ -61,7 +61,7 @@ class MethodCertificateDetails:
             # Agrega el subdominio encontrado a la pila local
             items.append(item['CommonName'])
 
-        self.hostnames.append({'subdomains': items})
+        self.hostnames.append({'subdomains': list(set(items))})
 
         # Identificador actual del enlace
         linkId = 0
@@ -79,7 +79,7 @@ class MethodCertificateDetails:
                                        linkId=linkId,
                                        totalLinks=len(result),
                                        hostname=hostname)
-        self.hostnames.append({'links': linkres})
+        self.hostnames.append({'links': list(set(linkres))})
         return self.hostnames
 
     def findInLink(self, url, linkId, totalLinks, hostname):
@@ -117,8 +117,7 @@ class MethodCertificateDetails:
         links = []
         for item in matches:
             it = item.decode()
-            if not it in links:
-                # Agrega el subdominio encontrado a la pila local
-                links.append(it)
+            # Agrega el subdominio encontrado a la pila local
+            links.append(it)
 
-        return list(set(links))
+        return links
