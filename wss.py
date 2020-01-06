@@ -59,72 +59,29 @@ def run_server(langbuf, param):
 
 def run_method(langbuf, param):
     h = Helper()
-    Logging.log(h.getlang(langbuf, 'running', None),
-                            LogLevel.CLI)
+    Logging.log(h.formatter(h.getlang(langbuf, 'running', None), [hostname]), LogLevel.CLI)
+    print(' ')
     if param is not None:
         for p in param:
             if (p == '0'):
-                axfr = MethodAxfr()
-                res = axfr.find(hostname)
-                #Output
-                AXFR_node = Node('AXFR')
-                NS_node = Node('nameservers', parent=AXFR_node)
-                DOMAIN_node = Node('subdomains', parent=AXFR_node)
-                ns = res.get('ns', [])
-                dn = res.get('domains', [])
-                for n in ns:
-                    node = Node(n, parent=NS_node)
-                for d in dn:
-                    node = Node(d, parent=DOMAIN_node)
-
-                for pre, fill, node in RenderTree(AXFR_node):
-                    Logging.log(h.formatter("{}{}", [pre, node.name]),
-                                LogLevel.CLI)
-
+                render_tree(request_method(MethodAxfr(), 'AXFR'))
             elif (p == '1'):
-                dnsq = MethodDnsQueries()
-                res = dnsq.find(hostname)
-                #Output
-                DNSQ_node = Node('DNS Queries')
-                for r in res:
-                    node = Node(h.formatter('{} // {}', [
-                        r.get('subdomain', '<n/a>'),
-                        r.get('recordType', '<n/a>')
-                    ]),
-                                parent=DNSQ_node)
-                for pre, fill, node in RenderTree(DNSQ_node):
-                    Logging.log(h.formatter("{}{}", [pre, node.name]),
-                                LogLevel.CLI)
+                render_tree(request_method(MethodDnsQueries(), 'DNS Queries'))
             elif (p == '2'):
-                virustotal = MethodVirusTotal()
-                res = virustotal.find(hostname)
-                #Output
-                VIRUSTOTAL_node = Node('VirusTotal')
-                for v in res:
-                    node = Node(v, parent=VIRUSTOTAL_node)
-                for pre, fill, node in RenderTree(VIRUSTOTAL_node):
-                    Logging.log(h.formatter("{}{}", [pre, node.name]),
-                                LogLevel.CLI)
+                render_tree(request_method(MethodVirusTotal(), 'VirusTotal'))
             elif (p == '3'):
-                robtex = MethodRobtex()
-                res = robtex.find(hostname)
-                #Output
-                ROBTEX_node = Node('RobTex')
-                for r in res:
-                    node = Node(r, parent=ROBTEX_node)
-                for pre, fill, node in RenderTree(ROBTEX_node):
-                    Logging.log(h.formatter("{}{}", [pre, node.name]),
-                                LogLevel.CLI)
+                render_tree(request_method(MethodRobtex(), 'Robtex'))
             elif (p == '4'):
-                crtsh = MethodCrtSh()
-                res = crtsh.find(hostname)
-                #Output
-                CRTSH_node = Node('CRTSH')
-                for c in res:
-                    node = Node(c, parent=CRTSH_node)
-                for pre, fill, node in RenderTree(CRTSH_node):
-                    Logging.log(h.formatter("{}{}", [pre, node.name]),
-                                LogLevel.CLI)
+                render_tree(request_method(MethodCrtSh(), 'CRTSH'))
+            elif (p == '5'):
+                render_tree(request_method(MethodCertificateDetails(), 'CertificateDetails'))
+            elif (p == '6'):
+                render_tree(request_method(MethodGoogle(), 'Google CSE'))
+            elif (p == '7'):
+                render_tree(request_method(MethodBing(), 'Bing'))
+            elif (p == '8'):
+                render_tree(request_method(MethodDnsDumpster(), 'DNS Dumpster'))
+
 
 
 def run_filter(langbuf, param):
