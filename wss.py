@@ -59,7 +59,8 @@ def run_server(langbuf, param):
 
 def run_method(langbuf, param):
     h = Helper()
-    Logging.log(h.formatter(h.getlang(langbuf, 'running', None), [hostname]), LogLevel.CLI)
+    Logging.log(h.formatter(h.getlang(langbuf, 'running', None), [hostname]),
+                LogLevel.CLI)
     print(' ')
     if param is not None:
         for p in param:
@@ -74,18 +75,40 @@ def run_method(langbuf, param):
             elif (p == '4'):
                 render_tree(request_method(MethodCrtSh(), 'CRTSH'))
             elif (p == '5'):
-                render_tree(request_method(MethodCertificateDetails(), 'CertificateDetails'))
+                render_tree(
+                    request_method(MethodCertificateDetails(),
+                                   'CertificateDetails'))
             elif (p == '6'):
                 render_tree(request_method(MethodGoogle(), 'Google CSE'))
             elif (p == '7'):
                 render_tree(request_method(MethodBing(), 'Bing'))
             elif (p == '8'):
-                render_tree(request_method(MethodDnsDumpster(), 'DNS Dumpster'))
-
+                render_tree(request_method(MethodDnsDumpster(),
+                                           'DNS Dumpster'))
 
 
 def run_filter(langbuf, param):
-    print(param)
+    h = Helper()
+    if param is not None:
+        res = []
+        for p in param:
+            if (p == '0'):
+                if ((os.geteuid() == 0)
+                        or (os.getenv('SUDO_USER') is not None)):
+                    f = FilterRawPorts()
+                    render_tree(request_filter(f.filter(hostname),
+                                               'Raw Ports'))
+                else:
+                    Logging.log(h.getlang(langbuf, 'errors', 'root-required'),
+                                LogLevel.DANGER)
+            elif (p == '1'):
+                f = FilterPorts()
+                render_tree(request_filter(f.findPorts(hostname), 'Ports'))
+            elif (p == '2'):
+                f = FilterHttpServices()
+                render_tree(
+                    request_filter(f.findHttpServices(hostname),
+                                   'Http Services'))
 
 
 def define_host(langbuf, param):
@@ -97,6 +120,31 @@ def define_host(langbuf, param):
         exit(-1)
     else:
         hostname = param
+
+
+def request_filter(res, node_t='Untitle'):
+    main_node = Node(node_t)
+    if isinstance(res, dict):
+        for k in res:
+            v = res.get(k)
+            if isinstance(v, list):
+                render_list(k, v, main_node)
+            elif isinstance(v, dict):
+                render_dict(v, main_node)
+            else:
+                w = Node(v, parent=main_node)
+    elif isinstance(res, list):
+        for k in res:
+            if isinstance(k, list):
+                render_list(None, k, main_node)
+            elif isinstance(k, dict):
+                render_dict(k, main_node)
+            else:
+                w = Node(k, parent=main_node)
+    else:
+        n = Node(res, parent=main_node)
+
+    return main_node
 
 
 def request_method(clazz, node_t='Untitle'):
@@ -142,11 +190,11 @@ def render_dict(d, tree):
     for o in d:
         m = d.get(o)
         if isinstance(m, list):
-            t += h.formatter('{}: {}', [o, ', '.join(m)])
+            t += h.formatter('{}: {} ', [o, ', '.join(m)])
         elif isinstance(m, dict):
             for p in m:
                 s = m.get(p)
-                t += h.formatter('{}: {}', [p, s])
+                t += h.formatter('{}: {} ', [p, s])
         else:
             t += h.formatter('{}: {} ', [o, m])
     q = Node(t, parent=tree)
@@ -184,7 +232,7 @@ class Wss(object):
         #Helper instance
         h = Helper()
         #Print banner
-        Logging.log(h.ftext('WHK Subdomains Scanner'), LogLevel.CLI)
+        Logging.log(h.ftext('WHK Subdomains Scanner', 'speed'), LogLevel.CLI)
         #Parse arguments from cli
         args = self.build_args()
         argc = len(args)
