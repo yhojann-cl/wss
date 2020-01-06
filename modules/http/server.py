@@ -154,4 +154,7 @@ class HttpServer(object):
             elif (m == 'virust'):
                 virust = MethodVirusTotal()
                 data['virustotal'] = {'data': virust.find(req.get('host'))}
+            elif (m == 'google'):
+                google = MethodGoogle()
+                data['google'] = {'data': google.find(req.get('host'))}
         return data
