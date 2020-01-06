@@ -81,7 +81,7 @@
         "empty-methods": "You need give at least a search method",
         "unknown-method": "The method '{method}' is not found.",
         "unknown-filter": "The filter '{filter}' is not found.",
-        "root-required": "The chosen module needs elevated privileges: {module}",
+        "root-required": "The chosen module needs elevated privileges",
         "invalid-hostname": "Invalid hostname."
     },
     "filter-begin": "- Filter {current}/{total}: {title}",
