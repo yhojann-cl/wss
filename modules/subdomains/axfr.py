@@ -72,4 +72,4 @@ class MethodAxfr(object):
                     r = h.formatter('{}.{}', [str(name), hostname])
                     self.subdomains.append(r)
 
-        return {'ns': self.ns, 'domains': self.subdomains}
+        return {'nameservers': self.ns, 'domains': self.subdomains}
