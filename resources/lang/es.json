@@ -55,6 +55,7 @@
         "Ejemplos:",
         "  wss.py --host starbucks.com -f 2"
     ],
+    "running": "Trabajando en el dominio '{}', por favor espere...",
     "result": {
         "result-all-title": "- Resultado final:",
         "unknown-ip-address-key": "Dirección IP desconocida",

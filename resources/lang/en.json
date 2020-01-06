@@ -54,7 +54,7 @@
         "Examples:",
         "  wss.py --host starbucks.com -f 2"
     ],
-    "running": "Please wait, working...",
+    "running": "Working over domain {}, please wait...",
     "result": {
         "result-all-title": "- Result:",
         "unknown-ip-address-key": "Unknown IP address",
