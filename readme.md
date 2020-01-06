@@ -1,6 +1,7 @@
-# WSS v2.5.2-beta
+# WSS v2.6
 
 [![Chileno](https://img.shields.io/badge/From-Chile-blue.svg)](https://es.wikipedia.org/wiki/Chile)
+[![Colombiano](https://img.shields.io/badge/From-Colombia-blueviolet)](https://es.wikipedia.org/wiki/Colombia)
 [![Licencia](https://img.shields.io/badge/license-GPL%20(%3E%3D%202)-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Contribuciones](https://img.shields.io/badge/contributions-welcome-blue.svg)](https://github.com/WHK102/wss/issues)
 [![Donaciones](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/whk102)
@@ -46,11 +47,29 @@ Los requrimientos se pueden instalar de la siguiente manera:
 
 Vamos al grano:
 
-    $ python3 wss.py --help
+    ___       _______  _______ __
+    __ |     / /__  / / /__  //_/
+    __ | /| / /__  /_/ /__  ,<   
+    __ |/ |/ / _  __  / _  /| |  
+    ____/|__/  /_/ /_/  /_/ |_|  
+                                 
+    ________      ______ _________                       _____               
+    __  ___/___  ____  /_______  /____________ _________ ___(_)______________
+    _____ \_  / / /_  __ \  __  /_  __ \_  __ `__ \  __ `/_  /__  __ \_  ___/
+    ____/ // /_/ /_  /_/ / /_/ / / /_/ /  / / / / / /_/ /_  / _  / / /(__  ) 
+    /____/ \__,_/ /_.___/\__,_/  \____//_/ /_/ /_/\__,_/ /_/  /_/ /_//____/  
+                                                                             
+    ________                                       
+    __  ___/___________ ___________________________
+    _____ \_  ___/  __ `/_  __ \_  __ \  _ \_  ___/
+    ____/ // /__ / /_/ /_  / / /  / / /  __/  /    
+    /____/ \___/ \__,_/ /_/ /_//_/ /_/\___//_/     
+                                                   
     WSS (WHK Subdomains Scanner)
-    Versión  : v2.5.2-beta
-    Contacto : whk@elhacker.net
-    -----------------------------------------
+    Version        : 2.6
+    Contacto       : whk@elhacker.net
+    Colaboradores  : admin@undernode.com
+    Fecha          : Jan  6, 2020 14:26:55
        
     Uso: wss.py [opciones]
        
@@ -60,6 +79,13 @@ Vamos al grano:
     Opciones:
       -h, --help     Muestra el mensaje de ayuda.
           --host     El nombre de dominio a buscar.
+      -a, --api      WSS API REST
+                      Parametros:
+                       <host>:<port>:<debug>
+                      Ejemplos:  
+                       -a :3000:off
+                       -a 3000
+                       -a 127.0.0.1:3000
       -m, --methods  Listado de métodos.
                      Métodos disponibles:
                        0: Consulta DNS/AXFR.
