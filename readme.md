@@ -61,6 +61,13 @@ Vamos al grano:
     Opciones:
       -h, --help     Muestra el mensaje de ayuda.
           --host     El nombre de dominio a buscar.
+      -a, --api      WSS API REST
+                      Parametros:
+                       <host>:<port>:<debug>
+                      Ejemplos:  
+                       -a :3000:off
+                       -a 3000
+                       -a 127.0.0.1:3000
       -m, --methods  Listado de métodos.
                      Métodos disponibles:
                        0: Consulta DNS/AXFR.

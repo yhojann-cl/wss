@@ -56,6 +56,13 @@ Let's cut to the chase:
     Options:
       -h, --help     Show the help message.
           --host     The host name to search.
+      -a, --api      WSS API REST
+                      Parameters:
+                       <host>:<port>:<debug>
+                      Examples:  
+                       -a :3000:off
+                       -a 3000
+                       -a 127.0.0.1:3000
       -m, --methods  List of methods.
                      Available methods:
                        0: DNS/AXFR query.
