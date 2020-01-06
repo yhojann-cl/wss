@@ -99,10 +99,69 @@ def define_host(langbuf, param):
         hostname = param
 
 
+def request_method(clazz, node_t='Untitle'):
+    main_node = Node(node_t)
+    res = clazz.find(hostname)
+    if isinstance(res, dict):
+        for k in res:
+            v = res.get(k)
+            if isinstance(v, list):
+                render_list(k, v, main_node)
+            elif isinstance(v, dict):
+                render_dict(v, main_node)
+            else:
+                w = Node(v, parent=main_node)
+    elif isinstance(res, list):
+        for k in res:
+            if isinstance(k, list):
+                render_list(None, k, main_node)
+            elif isinstance(k, dict):
+                render_dict(k, main_node)
+            else:
+                w = Node(k, parent=main_node)
+    else:
+        n = Node(res, parent=main_node)
+
+    return main_node
+
+
+def render_list(title, l, tree):
+    if (len(l)):
+        if title is not None:
+            a = Node(title, parent=tree)
+        for b in l:
+            if a is not None:
+                c = Node(b, parent=a)
+            else:
+                c = Node(b, parent=tree)
+
+
+def render_dict(d, tree):
+    h = Helper()
+    t = ''
+    for o in d:
+        m = d.get(o)
+        if isinstance(m, list):
+            t += h.formatter('{}: {}', [o, ', '.join(m)])
+        elif isinstance(m, dict):
+            for p in m:
+                s = m.get(p)
+                t += h.formatter('{}: {}', [p, s])
+        else:
+            t += h.formatter('{}: {} ', [o, m])
+    q = Node(t, parent=tree)
+
+
+def render_tree(tree):
+    h = Helper()
+    for pre, fill, node in RenderTree(tree):
+        Logging.log(h.formatter("{}{}", [pre, node.name]), LogLevel.CLI)
+
+
 class Wss(object):
 
-    langbuf = None
     lang = None
+    langbuf = None
     langpath = None
     CMDS = [{
         "flags": ['h', 'help'],
@@ -122,7 +181,6 @@ class Wss(object):
     }]
 
     def __init__(self):
-
         #Helper instance
         h = Helper()
         #Print banner
