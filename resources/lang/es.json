@@ -1,19 +1,28 @@
 {
     "header": [
         "WSS (WHK Subdomains Scanner)",
-        "Version : {}",
-        "Contacto: whk@elhacker.net",
-        "Fecha   : {}"
+        "Version        : {}",
+        "Contacto       : whk@elhacker.net",
+        "Colaboradores  : admin@undernode.com",
+        "Fecha          : {}"
     ],
     "usage": [
-        "Uso: {scriptname} [opciones]",
+        "Uso: wss.py [opciones]",
         "",
         "Resultado: Un arbol de nombres de dominio (subdominios) encontrados",
-        "agrupados por dirección IP.",
+        "agrupados por dirección IP. (solo CLI)",
         "",
         "Opciones:",
         "  -h, --help     Muestra el mensaje de ayuda.",
         "      --host     El nombre de dominio a buscar.",
+        "  -a, --api      WSS API REST",
+        "                  Parametros:",
+        "                   <host>:<port>:<debug>",
+        "                  Ejemplos:  ",
+        "                   -a :3000:off",
+        "                   -a 3000",
+        "                   -a 127.0.0.1:3000",
+        "  -l, --lang     Define el idioma a usar (idioma del sistema si no se provee)",
         "  -m, --methods  Listado de métodos.",
         "                 Métodos disponibles:",
         "                   0: Consulta DNS/AXFR.",
@@ -50,10 +59,9 @@
         "                 Por defecto no se utiliza ningún filtro.",
         "",
         "Ejemplos:",
-        "  {scriptname} --host starbucks.com -f 2",
-        "  sudo {scriptname} --host starbucks.com -f 02",
-        "  sudo {scriptname} --host dev.starbucks.com -f 02"
+        "  wss.py --host starbucks.com -f 2"
     ],
+    "running": "Trabajando en el dominio '{}', por favor espere...",
     "result": {
         "result-all-title": "- Resultado final:",
         "unknown-ip-address-key": "Dirección IP desconocida",
@@ -74,7 +82,7 @@
         "empty-methods": "Necesita indicar por lo menos un método de búsqueda.",
         "unknown-method": "El método '{method}' no existe.",
         "unknown-filter": "El filtro '{filter}' no existe.",
-        "root-required": "El módulo elegido necesita privilegios elevados: {module}"
+        "root-required": "El módulo elegido necesita privilegios elevados"
     },
     "filter-begin": "- Filtro {current}/{total}: {title}",
     "filters": {
@@ -221,6 +229,7 @@
         }
     },
     "cli": {
-        "lang-setted": "- Idioma cargado desde {}."
+        "lang-setted": "- Idioma cargado desde {}.",
+        "unknown-command": "Command '{}' not recognized. Try --help (or -h) for more info"
     }
 }

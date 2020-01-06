@@ -1,3 +1,6 @@
+import re
+import socket
+
 from os import path
 from time import strftime, localtime, time
 from pyfiglet import Figlet
@@ -46,3 +49,49 @@ class Helper(object):
 
     def formatter(self, fmt, args):
         return fmt.format(*args)
+
+    def ip_validate(self, mask):
+        if mask is None:
+            return None
+        else:
+            r = re.match(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$', mask)
+            if r:
+                return r.group()
+            else:
+                return None
+
+    def port_validate(self, mask):
+        r = re.match(r'^\d{4}$', mask)
+        if r:
+            return r.group()
+        else:
+            return None
+
+    def resolve_dns(self, address):
+        if self.ip_validate(address) is not None:
+            return [address]
+        else:
+            response = []
+            try:
+                dns = socket.gethostbyname_ex(address)
+                for record in dns:
+                    if (isinstance(record, list) and (len(record) > 0)):
+                        response += record
+                    else:
+                        response.append(record)
+                response = list(filter(lambda v: isinstance(v, str), response))
+                
+                return response
+            except Exception as e:
+                return [address]
+
+    def hostname_validate(self, host):
+        if host is None:
+            return None
+        elif not isinstance(host, str):
+            return None
+        else:
+            if host.count('.') >= 1:
+                return host
+            else:
+                return None

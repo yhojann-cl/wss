@@ -3,16 +3,25 @@
         "WSS (WHK Subdomains Scanner)",
         "Version     : {}",
         "Contact     : whk@elhacker.net",
+        "Contributors: admin@undernode.com",
         "Current date: {}"
     ],
     "usage": [
-        "Usage: {scriptname} [options]",
+        "Usage: wss.py [options]",
         "",
-        "Result: A tree of host names (subdomains) found grouped by IP address.",
+        "Result: A tree of host names (subdomains) found grouped by IP address. (only CLI)",
         "",
         "Options:",
         "  -h, --help     Show the help message.",
         "      --host     The host name to search.",
+        "  -a, --api      WSS API REST",
+        "                  Parameters:",
+        "                   <host>:<port>:<debug>",
+        "                  Examples:  ",
+        "                   -a :3000:off",
+        "                   -a 3000",
+        "                   -a 127.0.0.1:3000",
+        "  -l, --lang     Define language to use (system language if null)",
         "  -m, --methods  List of methods.",
         "                 Available methods:",
         "                   0: DNS/AXFR query.",
@@ -49,10 +58,9 @@
         "                 By default, no filter is used.",
         "",
         "Examples:",
-        "  {scriptname} --host starbucks.com -f 2",
-        "  sudo {scriptname} --host starbucks.com -f 02",
-        "  sudo {scriptname} --host dev.starbucks.com -f 02"
+        "  wss.py --host starbucks.com -f 2"
     ],
+    "running": "Working over domain {}, please wait...",
     "result": {
         "result-all-title": "- Result:",
         "unknown-ip-address-key": "Unknown IP address",
@@ -73,7 +81,8 @@
         "empty-methods": "You need give at least a search method",
         "unknown-method": "The method '{method}' is not found.",
         "unknown-filter": "The filter '{filter}' is not found.",
-        "root-required": "The chosen module needs elevated privileges: {module}"
+        "root-required": "The chosen module needs elevated privileges",
+        "invalid-hostname": "Invalid hostname."
     },
     "filter-begin": "- Filter {current}/{total}: {title}",
     "filters": {
@@ -116,32 +125,9 @@
     },
     "method-begin": "- Method {current}/{total}: {title}",
     "methods": {
-        "axfr": {
-            "title": "Getting from zone NS AXFR",
-            "getting-ns-servers": "    Getting results NS ...",
-            "unable-to-get-ns-servers": "    ! Unable get NS servers from DNS registration.",
-            "making-axfr-queries": "    Executing AXFR queries:",
-            "ns-progress": "        -> {nameserver} ... ",
-            "ns-vulnerable": "Vulnerable! ({count} records found).",
-            "getting-items": "    Records found:",
-            "item-found": "        {hostname} ({ip-address})",
-            "ns-not-vulnerable": "isn't vulnerable."
-        },
-        "dns-queries": {
-            "title": "Getting from NS, TXT, SPF y MX records",
-            "title-query-type": "    Executing {type} query...",
-            "item-found": "        -> {hostname} ({ip-address}) found.",
-            "no-items-found": "    ! No records redirect to primary hostname."
-        },
-        "virus-total": {
-            "title": "Getting from virustotal.com",
-            "paginating": "    Getting from page {number} ...",
-            "item-found": "        -> {hostname} ({ip-address}) found.",
-            "no-more": "    ! No more results.",
-            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
-            "no-connect": "    ! Unable connect to server.",
-            "corrupt-response": "    ! The server not reply correctly (wrong json API)."
-        },
+        "axfr": "Getting from zone NS AXFR",
+        "dns-queries": "Getting from NS, TXT, SPF y MX records",
+        "virus-total": "Getting from virustotal.com",
         "robtex": {
             "title": "Getting from robtex.com",
             "no-connect": "    ! Unable connect to server.",
@@ -221,6 +207,7 @@
         }
     },
     "cli": {
-        "lang-setted": "- Language setted to {}."
+        "lang-setted": "- Language setted to {}.",
+        "unknown-command": "Command '{}' not recognized. Try --help (or -h) for more info"
     }
 }

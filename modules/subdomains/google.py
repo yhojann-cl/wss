@@ -3,18 +3,11 @@
 
 import json
 from modules.helpers.networking.crawler import WCrawler
+from resources.util.helpers import Helper
 
 
 class MethodGoogle:
-
-    def __init__(self, context):
-
-        # El contexto principal
-        self.context = context
-        
-        # Variable que permite entregar subdominios únicos (no duplicados)
-        self.hostnames = []
-
+    def __init__(self):
         # Llave API-KEY de Google
         # Viene con una personal de regalo, si está saturada y google deniega
         # las solicitudes deberás utilizar tu propia API-KEY.
@@ -25,160 +18,70 @@ class MethodGoogle:
         # tus propias extensiones: https://cse.google.com/
         self.googleCx = '010763716184496466486:fscqb-8v6rs'
 
-
-    def find(self):
-
-        # Mensaje de la cabecera del método
-        self.context.out(
-            message=self.context.strings['method-begin'],
-            parseDict={
-                'current' : self.context.progress['methods']['current'],
-                'total'   : self.context.progress['methods']['total'],
-                'title'   : self.context.strings['methods']['google']['title']
-            }
-        )
-
+    def find(self, hostname):
+        h = Helper()
         # ¿La llave de la API de Google existe?
-        if(not self.googleApiKey.strip()):
-            self.context.out(
-                self.context.strings['methods']['google']['no-api-key']
-            )
-            return
+        if (not self.googleApiKey.strip()):
+            return []
 
-        # Busca en la primera página (de manera recursiva)
-        self.paginate()
-
-
-    def paginate(self, pageNumber=1):
-
-        # Contexto de la búsqueda de la página actual
-        searchContext = {
-            'max-pages'   : 15,
-            'max-result'  : 10,
-            'start-index' : 1,
-            'query'       : 'site:' + self.context.baseHostname
-        }
+        q = h.formatter('site:{}', [hostname])
+        hostnames = []
         
-        # ¿Hay resultados del método actual?
-        if(self.hostnames):
+        for i in range(1, 16):
+            # ¿Hay resultados del método actual?
+            if (hostnames):
+                # Excluye los subdominios ya conocidos
+                q += h.formatter('-site:{}', [' -site:'.join(hostnames)])
+            # Uso del crawler
+            crawler = WCrawler()
 
-            # Excluye los subdominios ya conocidos
-            searchContext['query'] += ' -site:' + ' -site:'.join(self.hostnames)
+            # El resultado es de tipo json
+            result = None
+            req = h.formatter(
+                'https://www.googleapis.com/customsearch/v1?cx={}&key={}&q={}&start={}&filter=1&safe=off&num={}',
+                [self.googleCx, self.googleApiKey, q, i, 10])
+            try:
+                # Navega
+                result = crawler.httpRequest(req)
 
-        # Número del resultado de inicio actual
-        searchContext['start-index'] = (
-            ((pageNumber - 1) * searchContext['max-result']) + 1
-        )
+                # Libera la memoria (no es necesario un contexto de navegación)
+                crawler.clearContext()
 
-        # Mensaje inicial de la paginación
-        self.context.out(
-            self.context.strings['methods']['google']['pagination']
-        )
+            except Exception as e:
+                break
 
-        # Uso del crawler
-        crawler = WCrawler()
+            # Los estados 403 y 400 indican que no hay más resultados o que la API
+            # está saturada con solicitudes.
+            if (result['status-code'] in [403, 400]):
+                break
 
-        # El resultado es de tipo json
-        result = None
+            # ¿La respuesta HTTP es OK?
+            if (result['status-code'] != 200):
+                break
 
-        try:
-            # Navega
-            result = crawler.httpRequest(
-                'https://www.googleapis.com/customsearch/v1?' +
-                'cx='     + crawler.urlencode(self.googleCx) +
-                '&key='   + crawler.urlencode(self.googleApiKey) +
-                '&q='     + crawler.urlencode(searchContext['query']) +
-                '&start=' + str(searchContext['start-index']) + 
-                '&filter=1&safe=off&num=' + str(searchContext['max-result'])
-            )
+            try:
+                # Convierte el resultado en un objeto de tipo json
+                result = json.loads(result['response-content'])
+            except Exception as e:
+                break
 
-            # Libera la memoria (no es necesario un contexto de navegación)
-            crawler.clearContext()
+            # ¿Hay resultados procesables?
+            if ((not 'items' in result) or (len(result['items']) == 0)):
+                break
 
-        except Exception as e:
+            # Procesa cada resultado
+            for item in result['items']:
 
-            # Imposible navegar
-            self.context.out(
-                self.context.strings['methods']['google']['no-connect']
-            )
+                f = h.formatter('.{}', [hostname])
+                # ¿El resultado es un subdominio inválido?
+                if (not item['displayLink'].endswith(f)):
+                    continue
 
-            return
+                # Evita los resultados duplicados utilizando la pila local
+                if (item['displayLink'] in hostnames):
+                    continue
 
-        # Los estados 403 y 400 indican que no hay más resultados o que la API
-        # está saturada con solicitudes.
-        if(result['status-code'] in [403, 400]):
-            self.context.out(
-                self.context.strings['methods']['google']['no-more-results']
-            )
-            return
+                # Agrega el subdominio encontrado a la pila local
+                hostnames.append(item['displayLink'])
 
-        # ¿La respuesta HTTP es OK?
-        if(result['status-code'] != 200):
-            self.context.out(
-                message=self.context.strings['methods']['google']['wrong-status-http'],
-                parseDict={
-                    'id': result['status-code']
-                }
-            )
-            return
-
-        try:
-            # Convierte el resultado en un objeto de tipo json
-            result = json.loads(result['response-content'])
-
-        except Exception as e:
-
-            # Contenido corrupto, no es de tipo json procesable
-            self.context.out(
-                self.context.strings['methods']['google']['corrupt-response']
-            )
-
-            return
-
-        # ¿Hay resultados procesables?
-        if(
-            (not 'items' in result) or
-            (len(result['items']) == 0)
-        ):
-
-            # No hay más resultados
-            self.context.out(
-                self.context.strings['methods']['google']['no-more-results']
-            )
-
-            return
-
-        # Procesa cada resultado
-        for item in result['items']:
-            
-            # ¿El resultado es un subdominio inválido?
-            if(not item['displayLink'].endswith('.' + self.context.baseHostname)):
-                continue
-            
-            # Evita los resultados duplicados utilizando la pila local
-            if(item['displayLink'] in self.hostnames):
-                continue
-
-            # Agrega el subdominio encontrado a la pila local
-            self.hostnames.append(item['displayLink'])
-
-            # Agrega el subdominio encontrado a la pila global de resultados
-            self.context.addHostName(
-                hostname=item['displayLink'],
-                messageFormat=self.context.strings['methods']['google']['item-found']
-            )
-
-            # Retorna a la primera página nuevamente debido a que la búsqueda
-            # debe contener la exclusión del subdominio encontrado, por ejemplo:
-            # site: example.com -site:foo.example.com
-            pageNumber = 0
-
-        # Límite de busqueda de páginas
-        if(pageNumber >= searchContext['max-pages']):
-            self.context.out(
-                self.context.strings['methods']['google']['no-more-results']
-            )
-            return
-
-        # Continua con la siguiente página
-        self.paginate(pageNumber=pageNumber + 1)
+        return hostnames
