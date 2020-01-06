@@ -51,11 +51,14 @@ class Helper(object):
         return fmt.format(*args)
 
     def ip_validate(self, mask):
-        r = re.match(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$', mask)
-        if r:
-            return r.group()
-        else:
+        if mask is None:
             return None
+        else:
+            r = re.match(r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$', mask)
+            if r:
+                return r.group()
+            else:
+                return None
 
     def port_validate(self, mask):
         r = re.match(r'^\d{4}$', mask)
@@ -83,7 +86,9 @@ class Helper(object):
                 return [address]
 
     def hostname_validate(self, host):
-        if not isinstance(host, str):
+        if host is None:
+            return None
+        elif not isinstance(host, str):
             return None
         else:
             if host.count('.') >= 1:
