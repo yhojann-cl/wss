@@ -82,7 +82,7 @@
         "empty-methods": "Necesita indicar por lo menos un método de búsqueda.",
         "unknown-method": "El método '{method}' no existe.",
         "unknown-filter": "El filtro '{filter}' no existe.",
-        "root-required": "El módulo elegido necesita privilegios elevados: {module}"
+        "root-required": "El módulo elegido necesita privilegios elevados"
     },
     "filter-begin": "- Filtro {current}/{total}: {title}",
     "filters": {
