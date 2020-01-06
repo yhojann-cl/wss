@@ -1,0 +1,213 @@
+{
+    "header": [
+        "WSS (WHK Subdomains Scanner)",
+        "Version     : {}",
+        "Contact     : whk@elhacker.net",
+        "Contributors: admin@undernode.com",
+        "Current date: {}"
+    ],
+    "usage": [
+        "Usage: wss.py [options]",
+        "",
+        "Result: A tree of host names (subdomains) found grouped by IP address. (only CLI)",
+        "",
+        "Options:",
+        "  -h, --help     Show the help message.",
+        "      --host     The host name to search.",
+        "  -a, --api      WSS API REST",
+        "                  Parameters:",
+        "                   <host>:<port>:<debug>",
+        "                  Examples:  ",
+        "                   -a :3000:off",
+        "                   -a 3000",
+        "                   -a 127.0.0.1:3000",
+        "  -l, --lang     Define language to use (system language if null)",
+        "  -m, --methods  List of methods.",
+        "                 Available methods:",
+        "                   0: DNS/AXFR query.",
+        "                   1: DNS queries to common records (TXT, MX, SPF, etc).",
+        "                   2: Search on virustotal.com.",
+        "                   3: Search on robtex.com.",
+        "                   4: Search on crt.sh.",
+        "                   5: Search on certificatedetails.com.",
+        "                   6: Search on google.com (if have the api-key).",
+        "                   7: Search on bing.com.",
+        "                   8: Search on dnsdumpster.com.",
+        "                   9: Brute force of 4 characters.",
+        "                   a: Use a dictionary of known subdomains.",
+        "                 Examples:",
+        "                   -m 01",
+        "                   -m 49a",
+        "                   -m 0123456789a",
+        "                 By default all available methods are used.",
+        "  -f, --filters  List of filters.",
+        "                 Available filters:",
+        "                   0: Search open ports for each IP address using low level",
+        "                      sockets (SYN-ACK), very fast but need privileges, only",
+        "                      requires 3 threads.",
+        "                   1: Search open ports for each IP address. The search is",
+        "                      basic, it does not replace conventional software such",
+        "                      as nmap. Use by default 500 threads.",
+        "                   2: Search HTTP services in the ports found by filter 0,",
+        "                      otherwise it will use a list of known http ports. Use",
+        "                      by default 20 threads. It does not need privileges but",
+        "                      it is a very slow method.",
+        "                 Examples:",
+        "                   -f 0",
+        "                   -f 02",
+        "                 By default, no filter is used.",
+        "",
+        "Examples:",
+        "  wss.py --host starbucks.com -f 2"
+    ],
+    "running": "Working over domain {}, please wait...",
+    "result": {
+        "result-all-title": "- Result:",
+        "unknown-ip-address-key": "Unknown IP address",
+        "node-tree": {
+            "root": "{count} subdomains were found",
+            "item-printed": "    {item}",
+            "hostnames-title": "Hostnames"
+        },
+        "empty": "! No results to show",
+        "finish": "- Done!"
+    },
+    "log-file": {
+        "saving": "- Saving results in the file: {path}"
+    },
+    "errors": {
+        "bad-python-version": "Sorry, Python 3.x, is required.",
+        "empty-hostname": "You need give a hostname",
+        "empty-methods": "You need give at least a search method",
+        "unknown-method": "The method '{method}' is not found.",
+        "unknown-filter": "The filter '{filter}' is not found.",
+        "root-required": "The chosen module needs elevated privileges",
+        "invalid-hostname": "Invalid hostname."
+    },
+    "filter-begin": "- Filter {current}/{total}: {title}",
+    "filters": {
+        "ports": {
+            "title": "Filtering ports...",
+            "find": "    -> {current}/{total} : {address} ...",
+            "skip": "    Omitted (internal network).",
+            "found": "        {port} Open.",
+            "progress-clear": "\r\u001b[2K",
+            "progress": "        Scanning port: {port} ...",
+            "progress-wait": "        Waiting for remaining ports ...",
+            "node-tree": {
+                "ports-title": "Ports"
+            }
+        },
+        "raw-ports": {
+            "title": "Filtering ports...",
+            "find": "    -> {current}/{total} : {address} ...",
+            "skip": "    Omitted (internal network).",
+            "unknown-skip": "    Omitted.",
+            "found": "        {source}:{port} Open.",
+            "progress-clear": "\r\u001b[2K",
+            "progress": "        Scanning port: {source}:{port} ...",
+            "progress-wait": "        Waiting for remaining ports ...",
+            "node-tree": {
+                "ports-title": "Ports"
+            }
+        },
+        "http": {
+            "title": "Finding HTTP services ...",
+            "progress-clear": "\r\u001b[2K",
+            "progress": "    {url} ... ",
+            "found": "    -> {url} (HTTP-{status-code}: {title})",
+            "progress-wait": "        Waiting for remaining urls ...",
+            "node-tree": {
+                "http-title": "HTTP services",
+                "http-service": "{url} (HTTP-{status-code}: {title})"
+            }
+        }
+    },
+    "method-begin": "- Method {current}/{total}: {title}",
+    "methods": {
+        "axfr": "Getting from zone NS AXFR",
+        "dns-queries": "Getting from NS, TXT, SPF y MX records",
+        "virus-total": "Getting from virustotal.com",
+        "robtex": {
+            "title": "Getting from robtex.com",
+            "no-connect": "    ! Unable connect to server.",
+            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
+            "empty": "    No subdomains found.",
+            "item-found": "    -> {hostname} ({ip-address}) found."
+        },
+        "crt-sh": {
+            "title": "Getting from crt.sh",
+            "no-connect": "    ! Unable connect to server.",
+            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
+            "corrupt-response": "    ! The server not reply correctly (wrong json API).",
+            "empty": "    No subdomains found.",
+            "item-found": "    -> {hostname} ({ip-address}) found."
+        },
+        "certificate-details": {
+            "title": "Getting from certificatedetails.com",
+            "no-connect": "    ! Unable connect to server.",
+            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
+            "corrupt-response": "    ! The server not reply correctly (wrong json API).",
+            "empty": "    No subdomains found.",
+            "item-found": "        -> {hostname} ({ip-address}) found.",
+            "find-links": "    Searching known links ...",
+            "find-clear": "\r\u001b[2K",
+            "find-link": "    Searching in link {link-id}/{total-links} ..."
+        },
+        "google": {
+            "title": "Getting from google.com",
+            "no-api-key": "    ! Google API-key must be given",
+            "no-connect": "    ! Unable connect to server.",
+            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
+            "pagination": "    Paginate now...",
+            "item-found": "        -> {hostname} ({ip-address}) found.",
+            "no-more-results": "    No more results.",
+            "corrupt-response": "    ! The server not reply correctly (wrong json API)."
+        },
+        "bing": {
+            "title": "Getting from bing.com",
+            "no-connect": "    ! Unable connect to server.",
+            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
+            "pagination": "    Paginate now...",
+            "item-found": "        -> {hostname} ({ip-address}) found.",
+            "no-more-results": "    No more results."
+        },
+        "dnsdumpster": {
+            "title": "Getting from dnsdumpster.com",
+            "no-connect": "    ! Unable connect to server.",
+            "wrong-status-http": "    ! The servver not reply correctly: HTTP status {id}",
+            "getting-token-xsrf": "    Login in server, please wait...",
+            "no-xsrf-token-found": "    ! Unable obtain XSRF token session.",
+            "getting-subdomains": "    Getting data using session obtained...",
+            "empty": "    No subdomains found.",
+            "item-found": "        -> {hostname} ({ip-address}) found."
+        },
+        "dictionary": {
+            "wildcard-detected": "    ! Has been detected a wilcard as a subdomain, can't check.",
+            "counting-items": "    Counting items of dictionary...",
+            "total-items": "    {total-items} subdomains to check.",
+            "loading-threads": "    Loading threads in heap ...",
+            "progress-pre": "\n\n\n\n",
+            "progress-clear": "\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K\u001b[1A\r\u001b[2K",
+            "progress": [
+                "",
+                "    Verifying : {hostname} ...",
+                "    Progress  : {current-line} / {total-lines} - {percent-lines}",
+                "    Threads   : {total-threads}",
+                "    Retries   : {total-retries}"
+
+            ],
+            "item-found": "        -> {hostname} ({ip-address}) found."
+        },
+        "dictionary-4": {
+            "title": "Getting through brute force (4 chars)"
+        },
+        "dictionary-words": {
+            "title": "Getting through a known subdomains dictionary"
+        }
+    },
+    "cli": {
+        "lang-setted": "- Language setted to {}.",
+        "unknown-command": "Command '{}' not recognized. Try --help (or -h) for more info"
+    }
+}
