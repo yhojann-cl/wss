@@ -62,7 +62,6 @@ class HttpServer(object):
                 try:
                     return HttpServer.run_filter(req)
                 except Exception as e:
-                    print(e)
                     return response_bad_request, 400
         else:
             return response_bad_request, 400
