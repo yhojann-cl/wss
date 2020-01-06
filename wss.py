@@ -2,7 +2,7 @@
 # # -*- coding: utf-8 -*-
 
 import sys
-import socket
+import os
 
 from anytree import Node, RenderTree
 
